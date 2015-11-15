@@ -143,7 +143,7 @@ public class Main {
                                               List<PatRectangle> list1;
                                               try {
                                                   String fileName = file1.getCanonicalPath();
-                                                  if (fileName.substring(fileName.length() - 3, fileName.length()).equals("xls")) {
+                                                  if (fileName.endsWith(".xls")) {
                                                       list1 = ExelParser.parser(fileName);
                                                       patViever.newList(list1);
                                                       comboBox.addItem(fileName);
@@ -389,7 +389,7 @@ public class Main {
         x = new JProgressBar(0);
         x.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
-                patViever.setSizeProcent(Double.valueOf(e.getX())/Double.valueOf(x.getWidth()));
+                patViever.setSizePercent(Double.valueOf(e.getX()) / Double.valueOf(x.getWidth()));
             }
         });
         buttonPanel.add(x);

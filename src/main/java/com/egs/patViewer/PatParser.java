@@ -21,7 +21,7 @@ public class PatParser {
         int Y = 0;
         int H = 0;
         int W = 0;
-        int A = 0; // todo Pattern.compile("X\\d+")
+        int A = 0;
         while (!line.equals("$;")) {
             if (!line.equals(lastLine)) {
                 int i = 1;
@@ -31,7 +31,7 @@ public class PatParser {
                     while (isNumeric(line.substring(x, i))) {
                         i++;
                     }
-                    switch (line.charAt(x-1)) {
+                    switch (line.charAt(x - 1)) {
                         case 'X': {
                             X = Integer.parseInt(line.substring(x, i - 1));
                             break;
@@ -57,19 +57,17 @@ public class PatParser {
                     }
                 }
             }
+            br.close();
             pr.add(new PatRectangle(X, Y, H, W, A));
             lastLine = line;
             line = br.readLine();
-            line =line.trim();
+            line = line.trim();
         }
         return pr;
     }
-        public static boolean isNumeric(String s) throws NumberFormatException {
-            try {
-                Integer.parseInt(s);
-                return true;
-            } catch (NumberFormatException e) {
-                return false;
-            }
-        }
+
+    public static boolean isNumeric(String s) throws NumberFormatException {
+        Integer.parseInt(s);
+        return true;
+    }
 }

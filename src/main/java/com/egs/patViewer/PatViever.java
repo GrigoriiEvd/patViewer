@@ -62,14 +62,14 @@ public class PatViever extends JComponent {
         list.set(i5, l5);
     }
 
-    public void setSizeProcent(Double d){
-        int max2=0;
+    public void setSizePercent(Double d) {
+        int max2 = 0;
         for (List<PatRectangle> list1 : list) {
-            if (max2<list1.size()){
-                max2=list1.size();
+            if (max2 < list1.size()) {
+                max2 = list1.size();
             }
         }
-        sizeOutput= (int)(max*d);
+        sizeOutput = (int) (max * d);
         repaint();
     }
 
@@ -196,7 +196,12 @@ public class PatViever extends JComponent {
             int k = 0;
             boolean flcol = true;
             for (PatRectangle i : list1) {
+                boolean endFlag = false;
                 if ((sizeOutput > k) || (!fOneOutput)) {
+                    if ((sizeOutput - 1 == k) && (fOneOutput)) {
+                        endFlag = true;
+                    }
+
                     k++;
                     mx[0] = i.getX() - (i.getW() / 2);
                     mx[1] = i.getX() + (i.getW() / 2);
@@ -255,6 +260,9 @@ public class PatViever extends JComponent {
                             my1[j] = (int) (my[j] * factor + y);
                         }
                     }
+                    if (endFlag) {
+                        g.setColor(colors[color++]);
+                    }
                     if (vf) {
                         if (ffill) {
                             ig2.fillPolygon(mx1, my1, 4);
@@ -268,76 +276,9 @@ public class PatViever extends JComponent {
                             g.drawPolygon(mx1, my1, 4);
                         }
                     }
-
-                } else {
-                    if (flcol) {
-                        flcol = false;
-                        k++;
-                        mx[0] = i.getX() - (i.getW() / 2);
-                        mx[1] = i.getX() + (i.getW() / 2);
-                        mx[2] = i.getX() + (i.getW() / 2);
-                        mx[3] = i.getX() - (i.getW() / 2);
-
-                        my[0] = i.getY() + (i.getH() / 2);
-                        my[1] = i.getY() + (i.getH() / 2);
-                        my[2] = i.getY() - (i.getH() / 2);
-                        my[3] = i.getY() - (i.getH() / 2);
-
-
-                        if (reverseX) {
-                            for (int j = 0; j < 4; j++) {
-                                mx[j] = maxX - mx[j];
-                            }
-                        }
-
-                        if (reverseY) {
-                            for (int j = 0; j < 4; j++) {
-                                my[j] = maxY - my[j];
-                            }
-                        }
-
-                        if (i.getA() != 0) {
-                            double radians;
-                            double x1, y1, x2, y2;
-                            for (int j = 0; j < 4; j++) {
-                                radians = Math.toRadians(i.getA() / 10);
-                                if (reverseX) {
-                                    x1 = mx[j] - (maxX - i.getX());
-                                } else {
-                                    x1 = mx[j] - i.getX();
-                                }
-                                if (reverseY) {
-                                    y1 = my[j] - (maxY - i.getY());
-                                } else {
-                                    y1 = my[j] - i.getY();
-                                }
-                                x2 = (x1 * (Math.cos(radians))) - (y1 * (Math.sin(radians)));
-                                y2 = (x1 * (Math.sin(radians))) + (y1 * (Math.cos(radians)));
-                                if (reverseX) {
-                                    mx1[j] = (int) (((maxX - i.getX()) + x2) * factor + x);
-                                } else {
-                                    mx1[j] = (int) ((i.getX() + x2) * factor + x);
-                                }
-                                if (reverseY) {
-                                    my1[j] = (int) (((maxY - i.getY()) + y2) * factor + y);
-                                } else {
-                                    my1[j] = (int) ((i.getY() + y2) * factor + y);
-                                }
-                            }
-                        } else {
-                            for (int j = 0; j < 4; j++) {
-                                mx1[j] = (int) (mx[j] * factor + x);
-                                my1[j] = (int) (my[j] * factor + y);
-                            }
-                        }
-                        g.setColor(colors[color++]);
-                        if (ffill) {
-                            g.fillPolygon(mx1, my1, 4);
-                        } else {
-                            g.drawPolygon(mx1, my1, 4);
-                        }
-
+                    if (endFlag) {
                         g.setColor(colors[--color]);
+                        endFlag = false;
                     }
                 }
             }
