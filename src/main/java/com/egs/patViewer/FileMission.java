@@ -4,7 +4,24 @@ package com.egs.patViewer;
  * Created by EGS on 05.10.2015.
  */
 public class FileMission {
-    String name;
+    private String name;
+    private int nX;
+    private int nY;
+    private int sizeModulX;
+    private int sizeModulY;
+    private int Proxod;
+    private int PFO;
+    private int E;
+    private int privWindowX;
+    private int privWindowY;
+    private int sizeWindowX;
+    private int sizeWindowY;
+    private int PFOKomplexX;
+    private int PFOKomplexY;
+    private int resultOffsetX;
+    private int resultOffsetY;
+    private int offsetNaFSX;
+    private int offsetNaFSY;
 
     public void setName(String name) {
         this.name = name;
@@ -135,39 +152,19 @@ public class FileMission {
         return offsetNaFSY;
     }
 
-    int nX;
-    int nY;
-    int sizeModulX;
-
     public void setSizeModulX(int sizeModulX) {
         this.sizeModulX = sizeModulX;
     }
 
     public void setSizeModulY(int sizeModulY) {
-        SizeModulY = sizeModulY;
+        this.sizeModulY = sizeModulY;
     }
 
     public int getSizeModulY() {
-
-        return SizeModulY;
+        return sizeModulY;
     }
 
     public int getSizeModulX() {
         return sizeModulX;
     }
-
-    int SizeModulY;
-    int Proxod;
-    int PFO;
-    int E;
-    int privWindowX;
-    int privWindowY;
-    int sizeWindowX;
-    int sizeWindowY;
-    int PFOKomplexX;
-    int PFOKomplexY;
-    int resultOffsetX;
-    int resultOffsetY;
-    int offsetNaFSX;
-    int offsetNaFSY;
 }

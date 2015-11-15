@@ -21,7 +21,7 @@ public class PatParser {
         int Y = 0;
         int H = 0;
         int W = 0;
-        int A = 0;
+        int A = 0; // todo Pattern.compile("X\\d+")
         while (!line.equals("$;")) {
             if (!line.equals(lastLine)) {
                 int i = 1;
@@ -56,7 +56,6 @@ public class PatParser {
                             break;
                     }
                 }
-
             }
             pr.add(new PatRectangle(X, Y, H, W, A));
             lastLine = line;
