@@ -281,16 +281,15 @@ public class PatViewer extends JComponent {
             double my[] = new double[4];
             int mx1[] = new int[4];
             int my1[] = new int[4];
-            int k = 0;
 
-            for (PatRectangle i : list1) {
-                boolean endFlag = false;
+            for (int k = 0; k < list1.size(); k++) {
                 if ((sizeOutput > k) || (!fOneOutput)) {
+                    PatRectangle i = list1.get(k);
+                    boolean endFlag = false;
+
                     if ((sizeOutput - 1 == k) && (fOneOutput)) {
                         endFlag = true;
                     }
-
-                    k++;
 
                     mx[0] = mx[3] = i.getX() - (i.getW() / 2);
                     mx[1] = mx[2] = i.getX() + (i.getW() / 2);
@@ -347,15 +346,14 @@ public class PatViewer extends JComponent {
                     if (endFlag) {
                         g.setColor(colors[color++]);
                     }
+
+                    g.drawPolygon(mx1, my1, 4);
                     if (ffill) {
                         g.fillPolygon(mx1, my1, 4);
-                    } else {
-                        g.drawPolygon(mx1, my1, 4);
                     }
 
                     if (endFlag) {
                         g.setColor(colors[--color]);
-                        endFlag = false;
                     }
                 }
             }
