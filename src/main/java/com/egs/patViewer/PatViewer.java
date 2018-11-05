@@ -7,8 +7,8 @@ import javax.print.attribute.PrintRequestAttributeSet;
 import javax.print.attribute.standard.Copies;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
@@ -20,6 +20,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Created by EGS on 03.10.2015.
@@ -204,28 +205,46 @@ public class PatViewer extends JComponent {
                 }
             }
         });
-        addMouseListener(new MouseListener() {
+
+        AtomicReference<Point> mouseDrugStart = new AtomicReference<>();
+
+        addMouseMotionListener(new MouseAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                Point start = mouseDrugStart.get();
+                if (start == null)
+                    return;
+
+                Point point = e.getPoint();
+                if (!start.equals(point)) {
+                    x += point.x - start.x;
+                    y += point.y - start.y;
+                    mouseDrugStart.set(point);
+                    repaint();
+                }
+            }
+        });
+        
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 1) {
+                    mouseDrugStart.set(e.getPoint());
+                }
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON1) {
+                    mouseDrugStart.set(null);
+                }
+            }
+
             @Override
             public void mouseClicked(MouseEvent e) {
                 x = x - (int) ((e.getX() - x) * 0.1);
                 y = y - (int) ((e.getY() - y) * 0.1);
                 incF();
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
             }
         });
     }
