@@ -6,6 +6,7 @@ import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
 import javax.print.attribute.standard.Copies;
 import javax.swing.*;
+import java.util.Date;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -16,6 +17,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +36,9 @@ public class PatViever extends JComponent {
     private int maxY = 0;
     private int minX = 0;
     private int minY = 0;
+    private int FontSize;
+    private int FontX;
+    private int FontY;
     private boolean reverseX = true;
     private boolean reverseY = true;
     private boolean fOneOutput = false;
@@ -44,7 +49,13 @@ public class PatViever extends JComponent {
     private int ScreenX;
     private int ScreenY;
     private String SaveImag = "-";
+    private String nameFile = "";
+    private static SimpleDateFormat formatdata = new SimpleDateFormat("dd.MM.yyyy HH:mm");
+    private String Printer = "";
+    private Boolean WriteName = true;
+    private Boolean WriteData = true;
     private static Color[] colors = {Color.black, Color.red, Color.green, Color.yellow, Color.blue, Color.pink, Color.orange, Color.darkGray, Color.cyan, Color.magenta};
+    private boolean flagLable;
 
     public int getListSize() {
         return list.size();
@@ -112,8 +123,25 @@ public class PatViever extends JComponent {
         repaint();
     }
 
+    public void lableFlag() {
+        if(!flagLable) {
+            flagLable = true;
+        }else{
+            flagLable = false;
+        }
+        repaint();
+    }
+
+    public boolean getLableFlag() {
+        return flagLable;
+    }
+
     public void setMaxX(int maxX) {
         this.maxX = maxX;
+    }
+
+    public void setNameFile(String NameFile) {
+        this.nameFile = NameFile;
     }
 
     public void setMaxY(int maxY) {
@@ -126,6 +154,44 @@ public class PatViever extends JComponent {
 
     public void setMinY(int minY) {
         this.minY = minY;
+    }
+
+    public void setFontSize(int FontSize) {
+        this.FontSize = FontSize;
+    }
+
+    public void setFontX(int FontX) {
+        this.FontX = FontX;
+    }
+
+    public void setFontY(int FontY) {
+        this.FontY = FontY;
+    }
+
+    public void setPrinter(String Printer1) {
+        this.Printer = Printer1;
+    }
+
+    public void setWriteName(Boolean wrna) {
+        this.WriteName = wrna;
+    }
+
+    public void setWriteData(Boolean wrda) {
+        this.WriteData = wrda;
+    }
+
+    public void incCenter(){
+        x = x - (int) (((getSize().getWidth()/2) - x) * 0.1);
+        y = y - (int) (((getSize().getHeight()/2) - y) * 0.1);
+        factor *= 1.1;
+        repaint();
+    }
+
+    public void decCenter(){
+        x = x + (int) (((getSize().getWidth()/2) - x) * 0.1);
+        y = y + (int) (((getSize().getHeight()/2) - y) * 0.1);
+        factor *= 0.9;
+        repaint();
     }
 
     public PatViever() {
@@ -180,9 +246,29 @@ public class PatViever extends JComponent {
             ig2.setColor(Color.white);
             ig2.fillRect(0, 0, ScreenX, ScreenY);
             ig2.setColor(Color.BLACK);
+             //   Font font = new Font("Serif", Font.ROMAN_BASELINE, 25);
+            Font font = new Font("Serif", Font.ROMAN_BASELINE, FontSize);
+            ig2.setFont(font);
+            if((WriteName)||(flagLable)) {
+                ig2.drawString(nameFile.substring(0, nameFile.indexOf(".")), FontX, FontY);
+            }
+            if((WriteData)||(flagLable)) {
+                ig2.drawString(formatdata.format(new Date().getTime()), (int) getSize().getWidth() / 2, (int) getSize().getHeight() - 20);
+            }
+             //   ig2.drawString(nameFile.substring(0, nameFile.indexOf(".")), (int) getSize().getWidth() / 2, 35);
         }
 
         int color = 0;
+        if(flagLable) {
+     //       Font font = new Font("Serif", Font.ROMAN_BASELINE, 25);
+    //        g.setFont(font);
+    //        g.drawString(nameFile.substring(0, nameFile.indexOf(".")), (int) getSize().getWidth() / 2, 35);
+            Font font = new Font("Serif", Font.ROMAN_BASELINE, FontSize);
+            g.setFont(font);
+            g.drawString(nameFile.substring(0, nameFile.lastIndexOf(".")), FontX, FontY);
+            g.drawString(formatdata.format(new Date().getTime()), (int) getSize().getWidth() / 2, (int) getSize().getHeight() - 20);
+        }
+
         for (List<PatRectangle> list1 : list) {
             g.setColor(colors[color++]);
             if (color == 10) {
@@ -314,6 +400,31 @@ public class PatViever extends JComponent {
         repaint();
     }
 
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public float getFactor() {
+        return factor;
+    }
+
+
+    public void setX(int x74) {
+        this.x=x74;
+    }
+
+    public void setY(int y74) {
+        this.y=y74;
+    }
+
+    public void setFactor(float factor74) {
+        this.factor=factor74;
+    }
+
     public void incY() {
         this.y = this.y + 100;
         repaint();
@@ -380,6 +491,7 @@ public class PatViever extends JComponent {
         SaveImag = SvIm;
     }
 
+
     public void printing() {
         ScreenX = (int) getSize().getWidth();
         ScreenY = (int) getSize().getHeight();
@@ -391,11 +503,21 @@ public class PatViever extends JComponent {
         PrintService pss[] = PrintServiceLookup.lookupPrintServices(DocFlavor.INPUT_STREAM.GIF, pras);
         if (pss.length == 0)
             throw new RuntimeException("No printer services available.");
-        String s7 = "";
+
+        String input ="";
         for (int i = 0; i < pss.length; i++) {
-            s7 = s7 + pss[i].getName() + " Введите " + Integer.toString(i) + "\n";
+            if (Printer.equals(pss[i].getName())) {
+                input = Integer.toString(i);
+            }
         }
-        String input = JOptionPane.showInputDialog(s7);
+        if(input.equals("")){
+            String s7 = "";
+            for (int i = 0; i < pss.length; i++) {
+                s7 = s7 + pss[i].getName() + " Введите " + Integer.toString(i) + "\n";
+            }
+            input = JOptionPane.showInputDialog(s7);
+        }
+
         PrintService ps = pss[Integer.decode(input)];
         DocPrintJob job = ps.createPrintJob();
         FileInputStream fin = null;
@@ -408,9 +530,7 @@ public class PatViever extends JComponent {
         try {
             job.print(doc, pras);
             fin.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (PrintException e) {
+        } catch (IOException | PrintException e) {
             e.printStackTrace();
         }
         if (!SaveImag.equals("+")) {

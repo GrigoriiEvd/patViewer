@@ -5,7 +5,6 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 
-import javax.swing.*;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,8 +26,43 @@ public class ExelParser {
         Sheet sheet = wb.getSheetAt(0);
 
         Iterator<Row> it = sheet.iterator();
+        Iterator<Row> it1 = sheet.iterator();
         int fl = 0;
         while (it.hasNext()) {
+            if (fl == 3) {
+                break;
+            }
+            Row row = it.next();
+            Iterator<Cell> cells = row.iterator();
+            Cell cell = cells.next();
+            int cellType = cell.getCellType();
+            if (fl==0) {
+                switch (cellType){
+                    case Cell.CELL_TYPE_STRING:
+                        if ((cell.getStringCellValue().equals("Файл задания"))) {
+                            fl = 1;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }else{
+                Iterator<Cell> cells1 = cells;
+                cells1.next();
+                cells1.next();
+                cells1.next();
+                cells1.next();
+                cells1.next();
+                cell = cells1.next();
+                if ((cell.getCellType() == Cell.CELL_TYPE_FORMULA)||(cell.getCellType() == Cell.CELL_TYPE_NUMERIC)){
+                    break;
+                }
+            }
+            it1.next();
+            System.out.println();
+        }
+        it=it1;
+   /*     while (it.hasNext()) {
             if (fl == 3) {
                 break;
             }
@@ -66,7 +100,7 @@ public class ExelParser {
                     break;
             }
             System.out.println();
-        }
+        }*/
         List<FileMission> fileMissions = new ArrayList<>();
         while (true) {
             try {
@@ -98,7 +132,11 @@ public class ExelParser {
                     x.setProxod(1);
                 }
                 cell = cells.next();
-                x.setPFO(cell.getCachedFormulaResultType());
+                if (cell.getCellType() == cell.CELL_TYPE_FORMULA) {
+                    x.setPFO(cell.getCachedFormulaResultType());
+                }else{
+                    x.setPFO((int) cell.getNumericCellValue());
+                }
                 if (x.getProxod() > 1) {
                     x.setnX(fileMissions.get(fileMissions.size() - 1).getnX());
                     x.setnY(fileMissions.get(fileMissions.size() - 1).getnY());
@@ -178,8 +216,9 @@ public class ExelParser {
             }
         }
         if (maxmin > plusX) {
-            String input = JOptionPane.showInputDialog("картинка уходит в < -"+Integer.toString(plusX/1000)+", установите нужный отступ");
-            plusX = Integer.parseInt(input)*1000;
+            //String input = JOptionPane.showInputDialog("картинка уходит в < -"+Integer.toString(plusX/1000)+", установите нужный отступ");
+            //plusX = Integer.parseInt(input)*1000;
+            plusX = maxmin+1000;
             plusY = plusX;
         }
 

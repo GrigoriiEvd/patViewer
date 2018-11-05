@@ -22,6 +22,7 @@ public class PatParser {
         int H = 0;
         int W = 0;
         int A = 0;
+        boolean F900 = false;
         while (!line.equals("$;")) {
             if (!line.equals(lastLine)) {
                 int i = 1;
@@ -50,6 +51,11 @@ public class PatParser {
                         }
                         case 'A': {
                             A = Integer.parseInt(line.substring(x, i - 1));
+                            if (A == 900) {
+                                F900 = true;
+                            } else {
+                                F900 = false;
+                            }
                             break;
                         }
                         default:
@@ -57,17 +63,25 @@ public class PatParser {
                     }
                 }
             }
-            br.close();
-            pr.add(new PatRectangle(X, Y, H, W, A));
+            if (F900) {
+                pr.add(new PatRectangle(X, Y, W, H, 0));
+            } else {
+                pr.add(new PatRectangle(X, Y, H, W, A));
+            }
             lastLine = line;
             line = br.readLine();
             line = line.trim();
         }
+        br.close();
         return pr;
     }
 
-    public static boolean isNumeric(String s) throws NumberFormatException {
-        Integer.parseInt(s);
-        return true;
+    public static boolean isNumeric(String s) {
+        try {
+            Integer.parseInt(s);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 }
