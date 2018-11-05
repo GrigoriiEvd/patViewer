@@ -7,6 +7,7 @@ import org.w3c.dom.NodeList;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
+import javax.swing.filechooser.FileFilter;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.awt.*;
@@ -21,7 +22,7 @@ import java.util.List;
 
 public class Main {
 
-    private static int timerSpeed=500;
+    private static int timerSpeed = 500;
     private static String workCatalog;
     private static String saveCatalog;
     private static PatViever patViever;
@@ -31,15 +32,39 @@ public class Main {
     private static int ExelHW = 100;
     private static int ExelXY = 1;
     private static int FontSize = 25;
-    private static int FontX= 1000;
+    private static int FontX = 1000;
     private static int FontY = 100;
-    private static int symProbeg=0;
-    private static int kolIzmStor=0;
-    private static int kolIzmYgl=0;
-    private static boolean fCombo = false;
+    private static int symProbeg = 0;
+    private static int kolIzmStor = 0;
+    private static int kolIzmYgl = 0;
+
     private static PatRectangle predRect;
+
+    private static File openFile() {
+        JFileChooser fileopen = new JFileChooser(workCatalog);
+        fileopen.setSize(1700, 1600);
+        
+        fileopen.setFileFilter(new FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                return f.getName().endsWith(".pat") || f.getName().endsWith(".xls") || f.isDirectory();
+            }
+
+            @Override
+            public String getDescription() {
+                return "*.pat or *.xls files";
+            }
+        });
+
+        int ret = fileopen.showDialog(null, "Open File");
+        if (ret == JFileChooser.APPROVE_OPTION) {
+            return fileopen.getSelectedFile();
+        } else {
+            return null;
+        }
+    }
+
     public static void main(String[] args) throws IOException {
-        String fileName = "";
         JLabel label1 = new JLabel("");
         JLabel label2 = new JLabel("");
         JLabel label3 = new JLabel("");
@@ -47,44 +72,21 @@ public class Main {
         patViever = new PatViever();
         ReadXml();
 
+        File file;
+
         if (args.length > 0) {
-            fileName = args[0];
+            file = new File(args[0]);
+        } else {
+            file = openFile();
         }
-        PatParser patParser = new PatParser();
-        List<PatRectangle> list = new ArrayList<>();
-        try {
-            if (!fileName.equals("")) {
-                if (fileName.endsWith(".xls")) {
-                    list = ExelParser.parser(fileName);
-                    patViever.newList(list);
-                } else {
-                    list = patParser.parser(fileName);
-                    patViever.newList(list);
-                }
-            } else {
-                File file = null;
-                JFileChooser fileopen = new JFileChooser(workCatalog);
-                fileopen.setSize(1700, 1600);
-                JDialog jd = new JDialog();
-                jd.setBounds(0, 0, 100, 100);
-                int ret = fileopen.showDialog(jd, "Open File");
-                if (ret == JFileChooser.APPROVE_OPTION) {
-                    file = fileopen.getSelectedFile();
-                    fileName = file.getCanonicalPath();
-                    if (fileName.endsWith(".xls")) {
-                        list = ExelParser.parser(fileName);
-                        patViever.newList(list);
-                    } else {
-                        list = patParser.parser(fileName);
-                        patViever.newList(list);
-                    }
-                } else {
-                    JOptionPane.showMessageDialog(null, "Ошибка при открытии файла");
-                }
+
+        if (file != null) {
+            try {
+                patViever.addFile(file);
+            } catch (IOException e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(null, "Failed to read file: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
         }
 
         JFrame f = new JFrame();
@@ -153,45 +155,30 @@ public class Main {
         btnOpen.addActionListener(new ActionListener() {
                                       @Override
                                       public void actionPerformed(ActionEvent e) {
-                                          File file1 = null;
-                                          JFileChooser fileopen = new JFileChooser(workCatalog);
-                                          int ret = fileopen.showDialog(null, "Open File");
-                                          if (ret == JFileChooser.APPROVE_OPTION) {
-                                              file1 = fileopen.getSelectedFile();
-                                              List<PatRectangle> list1;
+                                          File file = openFile();
+                                          if (file != null) {
                                               try {
-                                                  String fileName = file1.getCanonicalPath();
-                                                  if (fileName.endsWith(".xls")) {
-                                                      list1 = ExelParser.parser(fileName);
-                                                      patViever.newList(list1);
-                                                      comboBox.addItem(fileName);
-                                                  } else {
-                                                      list1 = patParser.parser(fileName);
-                                                      patViever.newList(list1);
-                                                      comboBox.addItem(fileName);
-                                                  }
-
-                                              } catch (Exception e1) {
-                                                  JOptionPane.showMessageDialog(null, e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                                                  patViever.addFile(file);
+                                                  comboBox.addItem(file.getAbsolutePath());
+                                              } catch (IOException e1) {
+                                                  e1.printStackTrace();
+                                                  JOptionPane.showMessageDialog(null, "Failed to opne file: " + e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                                               }
-                                          } else {
-                                              JOptionPane.showMessageDialog(null, "Ошибка при открытии файла");
                                           }
                                       }
                                   }
-
         );
         menuPanel.add(btnOpen);
         JButton btnLable = new JButton("Название файла");
         btnLable.addActionListener(new ActionListener() {
-                                      @Override
-                                      public void actionPerformed(ActionEvent e) {
-                                          String ss="\\";
-                                          patViever.setNameFile(comboBox.getItemAt(comboBox.getSelectedIndex()).substring(comboBox.getItemAt(comboBox.getSelectedIndex()).lastIndexOf(ss)+1, comboBox.getItemAt(comboBox.getSelectedIndex()).length()));
+                                       @Override
+                                       public void actionPerformed(ActionEvent e) {
+                                           String ss = "\\";
+                                           patViever.setNameFile(comboBox.getItemAt(comboBox.getSelectedIndex()).substring(comboBox.getItemAt(comboBox.getSelectedIndex()).lastIndexOf(ss) + 1, comboBox.getItemAt(comboBox.getSelectedIndex()).length()));
 
-                                          patViever.lableFlag();
-                                      }
-                                  }
+                                           patViever.lableFlag();
+                                       }
+                                   }
 
         );
         menuPanel.add(btnLable);
@@ -218,10 +205,10 @@ public class Main {
                                                        String fileName = comboBox.getItemAt(i);
                                                        if (fileName.endsWith(".xls")) {
                                                            list1 = ExelParser.parser(fileName);
-                                                           patViever.newList(list1);
+                                                           patViever.add(list1);
                                                        } else {
                                                            list1 = patParser.parser(fileName);
-                                                           patViever.newList(list1);
+                                                           patViever.add(list1);
                                                        }
 
 
@@ -234,9 +221,9 @@ public class Main {
                                            patViever.setY(y11);
                                            patViever.setFactor(factor11);
 */
-                                                       String ss="\\";
-                                                       patViever.setNameFile(comboBox.getItemAt(comboBox.getSelectedIndex()).substring(comboBox.getItemAt(comboBox.getSelectedIndex()).lastIndexOf(ss)+1, comboBox.getItemAt(comboBox.getSelectedIndex()).length()));
-                                                       patViever.printing();
+                                           String ss = "\\";
+                                           patViever.setNameFile(comboBox.getItemAt(comboBox.getSelectedIndex()).substring(comboBox.getItemAt(comboBox.getSelectedIndex()).lastIndexOf(ss) + 1, comboBox.getItemAt(comboBox.getSelectedIndex()).length()));
+                                           patViever.printing();
 
                                        }
                                    }
@@ -263,7 +250,7 @@ public class Main {
                                                  }
                                                  predRect = i;
                                              }
-                                             label2.setText("Cуммарный пробег по X/Y " + String.format("%.1f", (Float.valueOf(symProbeg)/Float.valueOf( 1000000))) + "   ");
+                                             label2.setText("Cуммарный пробег по X/Y " + String.format("%.1f", (Float.valueOf(symProbeg) / Float.valueOf(1000000))) + "   ");
                                              label3.setText("Изменение шторки " + Integer.toString(kolIzmStor) + "   ");
                                              label4.setText("Изменение угла поворота " + Integer.toString(kolIzmYgl) + "   ");
                                          }
@@ -274,9 +261,9 @@ public class Main {
         btnOptim.addActionListener(new ActionListener() {
                                        @Override
                                        public void actionPerformed(ActionEvent e) {
-                                           symProbeg=0;
-                                           kolIzmStor=0;
-                                           kolIzmYgl=0;
+                                           symProbeg = 0;
+                                           kolIzmStor = 0;
+                                           kolIzmYgl = 0;
                                            patViever.setList(comboBox.getSelectedIndex(), OptimumPat(patViever.getList().get(comboBox.getSelectedIndex())));
                                            patViever.optimumPosition();
                                            for (PatRectangle i : patViever.getList().get(comboBox.getSelectedIndex())) {
@@ -349,12 +336,10 @@ public class Main {
                                                bw.close();
                                                btnClear.doClick();
 
-                                               List<PatRectangle> list22 = new ArrayList<>();
                                                try {
-                                                   String fileName = fileNameWrite;
-                                                   list22 = patParser.parser(fileName);
-                                                   patViever.newList(list22);
-                                                   comboBox.addItem(fileName);
+                                                   List<PatRectangle> list22 = PatParser.parser(new File(fileNameWrite));
+                                                   patViever.add(list22);
+                                                   comboBox.addItem(fileNameWrite);
                                                } catch (Exception e1) {
                                                    JOptionPane.showMessageDialog(null, e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                                                }
@@ -368,8 +353,8 @@ public class Main {
 
         );
         menuPanel.add(btn0);
-        if (!fileName.equals("")) {
-            comboBox.addItem(fileName);
+        if (file != null) {
+            comboBox.addItem(file.getAbsolutePath());
         }
         menuPanel.add(btnClear);
         menuPanel.setLayout(new BoxLayout(menuPanel, BoxLayout.X_AXIS));
@@ -387,7 +372,7 @@ public class Main {
 
         );
         PanelPointer.add(btn1);
-     //   buttonPanel.add(Box.createVerticalStrut(20));
+        //   buttonPanel.add(Box.createVerticalStrut(20));
         JButton btn4 = new JButton("►");
         btn4.setToolTipText("Переместить изображение вправо");
         btn4.addActionListener(new ActionListener() {
@@ -398,7 +383,7 @@ public class Main {
                                }
         );
         PanelPointer.add(btn4);
-       // buttonPanel.add(Box.createVerticalStrut(20));
+        // buttonPanel.add(Box.createVerticalStrut(20));
         JButton btn2 = new JButton("▲");
         btn2.setToolTipText("Переместить изображение вверх");
         btn2.addActionListener(new ActionListener() {
@@ -409,7 +394,7 @@ public class Main {
                                }
         );
         PanelPointer1.add(btn2);
-      //  buttonPanel.add(Box.createVerticalStrut(20));
+        //  buttonPanel.add(Box.createVerticalStrut(20));
         JButton btn3 = new JButton("▼");
         btn3.setToolTipText("Переместить изображение вниз");
         btn3.addActionListener(new ActionListener() {
@@ -420,13 +405,13 @@ public class Main {
                                }
         );
         PanelPointer1.add(btn3);
-      //  buttonPanel.add(Box.createVerticalStrut(20));
+        //  buttonPanel.add(Box.createVerticalStrut(20));
         buttonPanel.add(btnOptimKv);
-    //    buttonPanel.add(btnPovorot);
+        //    buttonPanel.add(btnPovorot);
         buttonPanel.add(Box.createVerticalStrut(20));
         buttonPanel.add(PanelPointer);
         buttonPanel.add(PanelPointer1);
-        JPanel PanelSize= new JPanel();
+        JPanel PanelSize = new JPanel();
         JButton btn5 = new JButton("+");
         btn5.setToolTipText("Приблизить изображение");
         btn5.addActionListener(new ActionListener() {
@@ -462,7 +447,7 @@ public class Main {
         );
         PanelSize.add(btn6);
         buttonPanel.add(PanelSize);
-       // buttonPanel.add(Box.createVerticalStrut(20));
+        // buttonPanel.add(Box.createVerticalStrut(20));
         JCheckBox checkBox1 = new JCheckBox("Инвертировать по оси X", true);
         checkBox1.addItemListener(new ItemListener() {
                                       public void itemStateChanged(ItemEvent e) {
@@ -525,36 +510,36 @@ public class Main {
         });
         buttonPanel.add(x);
         buttonPanel.add(Box.createVerticalStrut(20));
-        JLabel label = new JLabel("Скорость "+Double.toString(Double.valueOf(1000)/Double.valueOf(timerSpeed))+" в секунду");
-      //  JLabel label = new JLabel("");
-        JPanel PanelPlay= new JPanel();
-        JPanel PanelPlay1= new JPanel();
+        JLabel label = new JLabel("Скорость " + Double.toString(Double.valueOf(1000) / Double.valueOf(timerSpeed)) + " в секунду");
+        //  JLabel label = new JLabel("");
+        JPanel PanelPlay = new JPanel();
+        JPanel PanelPlay1 = new JPanel();
         JButton btnFast = new JButton(">>");
         btnFast.setToolTipText("Ускорить вывод элементов");
         btnFast.addActionListener(new ActionListener() {
                                       @Override
                                       public void actionPerformed(ActionEvent e) {
-                                          String s=Float.toString(1000f / timerFast());
-                                          int si=s.indexOf('.');
-                                          if (s.length()-si>1){
-                                              s= s.substring(0, si+2);
+                                          String s = Float.toString(1000f / timerFast());
+                                          int si = s.indexOf('.');
+                                          if (s.length() - si > 1) {
+                                              s = s.substring(0, si + 2);
                                           }
                                           label.setText("Скорость " + s + " в секунду");
                                       }
                                   }
 
         );
-      //  buttonPanel.add(Box.createVerticalStrut(20));
+        //  buttonPanel.add(Box.createVerticalStrut(20));
         JButton btnslow = new JButton("<<");
         btnslow.setToolTipText("Замедлить вывод элементов");
         btnslow.addActionListener(new ActionListener() {
                                       @Override
                                       public void actionPerformed(ActionEvent e) {
                                           timerSlow();
-                                          String s=Float.toString(1000f / timerSpeed);
-                                          int si=s.indexOf('.');
-                                          if (s.length()-si>1){
-                                              s= s.substring(0, si+2);
+                                          String s = Float.toString(1000f / timerSpeed);
+                                          int si = s.indexOf('.');
+                                          if (s.length() - si > 1) {
+                                              s = s.substring(0, si + 2);
                                           }
                                           label.setText("Скорость " + s + " в секунду");
                                       }
@@ -563,7 +548,7 @@ public class Main {
         );
         PanelPlay.add(btnslow);
         PanelPlay.add(btnFast);
-     //   buttonPanel.add(Box.createVerticalStrut(20));
+        //   buttonPanel.add(Box.createVerticalStrut(20));
         JButton btnStop = new JButton("Остановить вывод");
         btnStop.setToolTipText("Остановить вывод элементов");
         btnStop.addActionListener(new ActionListener() {
@@ -605,26 +590,26 @@ public class Main {
 
         );
         PanelPlay1.add(btnNaz);
-       // buttonPanel.add(Box.createVerticalStrut(20));
+        // buttonPanel.add(Box.createVerticalStrut(20));
         buttonPanel.add(label);
         buttonPanel.add(PanelPlay);
         buttonPanel.add(PanelPlay1);
         label1.setText("В выбранном файле " + Integer.toString(patViever.getList().get(comboBox.getSelectedIndex()).size()) + " элементов");
-        predRect=patViever.getList().get(comboBox.getSelectedIndex()).get(0);
-        for (PatRectangle i: patViever.getList().get(comboBox.getSelectedIndex())){
-            symProbeg=symProbeg+Math.abs(predRect.getX()-i.getX())+Math.abs(predRect.getY()-i.getY());
-            if ((predRect.getH()!=i.getH())||(predRect.getW()!=i.getW())){
+        predRect = patViever.getList().get(comboBox.getSelectedIndex()).get(0);
+        for (PatRectangle i : patViever.getList().get(comboBox.getSelectedIndex())) {
+            symProbeg = symProbeg + Math.abs(predRect.getX() - i.getX()) + Math.abs(predRect.getY() - i.getY());
+            if ((predRect.getH() != i.getH()) || (predRect.getW() != i.getW())) {
                 kolIzmStor++;
             }
-            if ((predRect.getA()!=i.getA())){
+            if ((predRect.getA() != i.getA())) {
                 kolIzmYgl++;
             }
-            predRect=i;
+            predRect = i;
         }
-        label2.setText("Cуммарный пробег по X/Y " + String.format("%.1f", (Float.valueOf(symProbeg)/Float.valueOf( 1000000))) + "   ");
-      //  label2.setText("Cуммарный пробег по X/Y " + Float.toString(symProbeg)+"   ");
-        label3.setText("Изменение шторки " + Integer.toString(kolIzmStor)+"   ");
-        label4.setText("Изменение угла поворота " + Integer.toString(kolIzmYgl)+"   ");
+        label2.setText("Cуммарный пробег по X/Y " + String.format("%.1f", (Float.valueOf(symProbeg) / Float.valueOf(1000000))) + "   ");
+        //  label2.setText("Cуммарный пробег по X/Y " + Float.toString(symProbeg)+"   ");
+        label3.setText("Изменение шторки " + Integer.toString(kolIzmStor) + "   ");
+        label4.setText("Изменение угла поворота " + Integer.toString(kolIzmYgl) + "   ");
         buttonPanel.add(label1);
         buttonPanel.add(label2);
         buttonPanel.add(label3);
@@ -693,9 +678,9 @@ public class Main {
             double minx = lengthPat(l1.get(l1.size() - 1), l.get(0));
             PatRectangle k2 = l.get(0);
             PatRectangle k3 = l.get(0);
-            boolean flpovt=true;
+            boolean flpovt = true;
             boolean fpr = false;
-            if (l1.size()>1) {
+            if (l1.size() > 1) {
                 if ((l1.get(l1.size() - 1).getH() == l1.get(l1.size() - 2).getH()) || (l1.get(l1.size() - 1).getA() == l1.get(l1.size() - 2).getA())) {
                     if (((l1.get(l1.size() - 1).getX() == l1.get(l1.size() - 2).getX()) && (l1.get(l1.size() - 1).getY() != l1.get(l1.size() - 2).getY())) || ((l1.get(l1.size() - 1).getX() != l1.get(l1.size() - 2).getX()) && (l1.get(l1.size() - 1).getY() == l1.get(l1.size() - 2).getY()))) {
                         fpr = true;
@@ -727,15 +712,15 @@ public class Main {
                     l1.add(k2);
                     l.remove(k2);
                 } else {
-                    if (lengthPat(l1.get(l1.size()-1), k3) <= lengthPat(l1.get(l1.size()-1), k2)*1.1) {
+                    if (lengthPat(l1.get(l1.size() - 1), k3) <= lengthPat(l1.get(l1.size() - 1), k2) * 1.1) {
                         l1.add(k3);
                         l.remove(k3);
-                    }else{
+                    } else {
                         l1.add(k2);
                         l.remove(k2);
                     }
                 }
-            }else{
+            } else {
                 for (PatRectangle i : l) {
                     if (minx > lengthPat(l1.get(l1.size() - 1), i)) {
                         minx = lengthPat(l1.get(l1.size() - 1), i);
@@ -748,6 +733,7 @@ public class Main {
         }
         return l1;
     }
+
     public static List<PatRectangle> OptimumPat(List<PatRectangle> l) {
         ArrayList<PatRectangle> l1 = new ArrayList<>();
         PatRectangle min = l.get(0);
@@ -804,19 +790,19 @@ public class Main {
                 ExelXY = Integer.parseInt(scoo);
                 patViever.setSaveImag(elj.getAttribute("SaveImage"));
                 try {
-                    timerSpeed=Integer.parseInt( elj.getAttribute("SpeedPrint"));
-                }catch (Exception e2){
-                    timerSpeed=250;
+                    timerSpeed = Integer.parseInt(elj.getAttribute("SpeedPrint"));
+                } catch (Exception e2) {
+                    timerSpeed = 250;
                 }
                 try {
-                    workCatalog=elj.getAttribute("WorkCatalog");
-                }catch (Exception e2){
-                    workCatalog=System.getProperty("user.dir");
+                    workCatalog = elj.getAttribute("WorkCatalog");
+                } catch (Exception e2) {
+                    workCatalog = System.getProperty("user.dir");
                 }
                 try {
-                    saveCatalog=elj.getAttribute("SaveCatalog");
-                }catch (Exception e2){
-                    saveCatalog=System.getProperty("user.dir");
+                    saveCatalog = elj.getAttribute("SaveCatalog");
+                } catch (Exception e2) {
+                    saveCatalog = System.getProperty("user.dir");
                 }
                 scoo = elj.getAttribute("FontSize");
                 FontSize = Integer.parseInt(scoo);
@@ -829,11 +815,11 @@ public class Main {
                 patViever.setFontY(FontY);
                 patViever.setPrinter(elj.getAttribute("Printer"));
                 scoo = elj.getAttribute("WriteName");
-                if (scoo.equals("+")){
+                if (scoo.equals("+")) {
                     patViever.setWriteName(true);
                 }
                 scoo = elj.getAttribute("WriteData");
-                if (scoo.equals("+")){
+                if (scoo.equals("+")) {
                     patViever.setWriteData(true);
                 }
             }

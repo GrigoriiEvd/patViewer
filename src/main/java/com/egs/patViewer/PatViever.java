@@ -6,7 +6,6 @@ import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
 import javax.print.attribute.standard.Copies;
 import javax.swing.*;
-import java.util.Date;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -19,6 +18,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -426,7 +426,22 @@ public class PatViever extends JComponent {
         repaint();
     }
 
-    public void newList(List<PatRectangle> list1) {
+    public void addFile(File file) throws IOException {
+        if (file == null)
+            return;
+
+        List<PatRectangle> list;
+
+        if (file.getName().endsWith(".xls")) {
+            list = ExelParser.parser(file);
+        } else {
+            list = PatParser.parser(file);
+        }
+
+        add(list);
+    }
+
+    public void add(List<PatRectangle> list1) {
         list.add(list1);
         for (List<PatRectangle> list2 : list) {
             if (list2.size() > max) {
