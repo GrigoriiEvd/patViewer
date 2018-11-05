@@ -382,14 +382,6 @@ public class PatViewer extends JComponent {
         repaint();
     }
 
-    public int getX() {
-        return x;
-    }
-
-    public int getY() {
-        return y;
-    }
-
     public float getFactor() {
         return factor;
     }
