@@ -26,7 +26,7 @@ import java.util.List;
  */
 
 
-public class PatViever extends JComponent {
+public class PatViewer extends JComponent {
 
     private List<List<PatRectangle>> list = new ArrayList<>();
     private float factor = 1f / 500;
@@ -187,7 +187,7 @@ public class PatViever extends JComponent {
         repaint();
     }
 
-    public PatViever() {
+    public PatViewer() {
         addMouseWheelListener(new MouseWheelListener() {
             @Override
             public void mouseWheelMoved(MouseWheelEvent e) {

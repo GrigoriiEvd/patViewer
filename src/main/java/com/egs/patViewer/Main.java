@@ -25,7 +25,7 @@ public class Main {
     private static int timerSpeed = 500;
     private static String workCatalog;
     private static String saveCatalog;
-    private static PatViever patViever;
+    private static PatViewer patViewer;
     private static JProgressBar x;
     private static boolean fpor = true;
     private static int ExelA = 10000;
@@ -69,7 +69,7 @@ public class Main {
         JLabel label2 = new JLabel("");
         JLabel label3 = new JLabel("");
         JLabel label4 = new JLabel("");
-        patViever = new PatViever();
+        patViewer = new PatViewer();
         ReadXml();
 
         File file;
@@ -82,7 +82,7 @@ public class Main {
 
         if (file != null) {
             try {
-                patViever.addFile(file);
+                patViewer.addFile(file);
             } catch (IOException e) {
                 e.printStackTrace();
                 JOptionPane.showMessageDialog(null, "Failed to read file: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -95,7 +95,7 @@ public class Main {
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         JPanel viewerPanel = new JPanel(new BorderLayout());
         viewerPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
-        viewerPanel.add(patViever, BorderLayout.CENTER);
+        viewerPanel.add(patViewer, BorderLayout.CENTER);
         JPanel panel = new JPanel(new BorderLayout());
 
         panel.add(viewerPanel, BorderLayout.CENTER);
@@ -111,12 +111,12 @@ public class Main {
                                        @Override
                                        public void actionPerformed(ActionEvent e) {
                                            if (comboBox.getItemCount() > 0) {
-                                               label1.setText("В выбранном файле " + Integer.toString(patViever.getList().get(comboBox.getSelectedIndex()).size()) + " элементов   ");
+                                               label1.setText("В выбранном файле " + Integer.toString(patViewer.getList().get(comboBox.getSelectedIndex()).size()) + " элементов   ");
                                                int symProbeg = 0;
                                                int kolIzmStor = 0;
                                                int kolIzmYgl = 0;
-                                               PatRectangle predRect = patViever.getList().get(comboBox.getSelectedIndex()).get(0);
-                                               for (PatRectangle i : patViever.getList().get(comboBox.getSelectedIndex())) {
+                                               PatRectangle predRect = patViewer.getList().get(comboBox.getSelectedIndex()).get(0);
+                                               for (PatRectangle i : patViewer.getList().get(comboBox.getSelectedIndex())) {
                                                    symProbeg = symProbeg + Math.abs(predRect.getX() - i.getX()) + Math.abs(predRect.getY() - i.getY());
                                                    if ((predRect.getH() != i.getH()) || (predRect.getW() != i.getW())) {
                                                        kolIzmStor++;
@@ -142,10 +142,10 @@ public class Main {
         btnClear.addActionListener(new ActionListener() {
                                        @Override
                                        public void actionPerformed(ActionEvent e) {
-                                           if (patViever.getLableFlag()) {
-                                               patViever.lableFlag();
+                                           if (patViewer.getLableFlag()) {
+                                               patViewer.lableFlag();
                                            }
-                                           patViever.clearList();
+                                           patViewer.clearList();
                                            comboBox.removeAllItems();
                                        }
                                    }
@@ -158,7 +158,7 @@ public class Main {
                                           File file = openFile();
                                           if (file != null) {
                                               try {
-                                                  patViever.addFile(file);
+                                                  patViewer.addFile(file);
                                                   comboBox.addItem(file.getAbsolutePath());
                                               } catch (IOException e1) {
                                                   e1.printStackTrace();
@@ -174,9 +174,9 @@ public class Main {
                                        @Override
                                        public void actionPerformed(ActionEvent e) {
                                            String ss = "\\";
-                                           patViever.setNameFile(comboBox.getItemAt(comboBox.getSelectedIndex()).substring(comboBox.getItemAt(comboBox.getSelectedIndex()).lastIndexOf(ss) + 1, comboBox.getItemAt(comboBox.getSelectedIndex()).length()));
+                                           patViewer.setNameFile(comboBox.getItemAt(comboBox.getSelectedIndex()).substring(comboBox.getItemAt(comboBox.getSelectedIndex()).lastIndexOf(ss) + 1, comboBox.getItemAt(comboBox.getSelectedIndex()).length()));
 
-                                           patViever.lableFlag();
+                                           patViewer.lableFlag();
                                        }
                                    }
 
@@ -188,14 +188,14 @@ public class Main {
                                        public void actionPerformed(ActionEvent e) {
 
 /*
-                                           int x11=patViever.getX();
-                                           int y11=patViever.getY();
-                                           float factor11=patViever.getFactor();
+                                           int x11=patViewer.getX();
+                                           int y11=patViewer.getY();
+                                           float factor11=patViewer.getFactor();
 
-                                           if (patViever.getLableFlag()) {
-                                               patViever.lableFlag();
+                                           if (patViewer.getLableFlag()) {
+                                               patViewer.lableFlag();
                                            }
-                                           patViever.clearList();
+                                           patViewer.clearList();
                                          //  comboBox.removeAllItems();
                                            int scet=comboBox.getItemCount();
 
@@ -205,10 +205,10 @@ public class Main {
                                                        String fileName = comboBox.getItemAt(i);
                                                        if (fileName.endsWith(".xls")) {
                                                            list1 = ExelParser.parser(fileName);
-                                                           patViever.add(list1);
+                                                           patViewer.add(list1);
                                                        } else {
                                                            list1 = patParser.parser(fileName);
-                                                           patViever.add(list1);
+                                                           patViewer.add(list1);
                                                        }
 
 
@@ -217,13 +217,13 @@ public class Main {
                                                    }
 
                                            }
-                                           patViever.setX(x11);
-                                           patViever.setY(y11);
-                                           patViever.setFactor(factor11);
+                                           patViewer.setX(x11);
+                                           patViewer.setY(y11);
+                                           patViewer.setFactor(factor11);
 */
                                            String ss = "\\";
-                                           patViever.setNameFile(comboBox.getItemAt(comboBox.getSelectedIndex()).substring(comboBox.getItemAt(comboBox.getSelectedIndex()).lastIndexOf(ss) + 1, comboBox.getItemAt(comboBox.getSelectedIndex()).length()));
-                                           patViever.printing();
+                                           patViewer.setNameFile(comboBox.getItemAt(comboBox.getSelectedIndex()).substring(comboBox.getItemAt(comboBox.getSelectedIndex()).lastIndexOf(ss) + 1, comboBox.getItemAt(comboBox.getSelectedIndex()).length()));
+                                           patViewer.printing();
 
                                        }
                                    }
@@ -238,9 +238,9 @@ public class Main {
                                              symProbeg = 0;
                                              kolIzmStor = 0;
                                              kolIzmYgl = 0;
-                                             patViever.setList(comboBox.getSelectedIndex(), OptimumPat1(patViever.getList().get(comboBox.getSelectedIndex())));
-                                             patViever.optimumPosition();
-                                             for (PatRectangle i : patViever.getList().get(comboBox.getSelectedIndex())) {
+                                             patViewer.setList(comboBox.getSelectedIndex(), OptimumPat1(patViewer.getList().get(comboBox.getSelectedIndex())));
+                                             patViewer.optimumPosition();
+                                             for (PatRectangle i : patViewer.getList().get(comboBox.getSelectedIndex())) {
                                                  symProbeg = symProbeg + Math.abs(predRect.getX() - i.getX()) + Math.abs(predRect.getY() - i.getY());
                                                  if ((predRect.getH() != i.getH()) || (predRect.getW() != i.getW())) {
                                                      kolIzmStor++;
@@ -264,9 +264,9 @@ public class Main {
                                            symProbeg = 0;
                                            kolIzmStor = 0;
                                            kolIzmYgl = 0;
-                                           patViever.setList(comboBox.getSelectedIndex(), OptimumPat(patViever.getList().get(comboBox.getSelectedIndex())));
-                                           patViever.optimumPosition();
-                                           for (PatRectangle i : patViever.getList().get(comboBox.getSelectedIndex())) {
+                                           patViewer.setList(comboBox.getSelectedIndex(), OptimumPat(patViewer.getList().get(comboBox.getSelectedIndex())));
+                                           patViewer.optimumPosition();
+                                           for (PatRectangle i : patViewer.getList().get(comboBox.getSelectedIndex())) {
                                                symProbeg = symProbeg + Math.abs(predRect.getX() - i.getX()) + Math.abs(predRect.getY() - i.getY());
                                                if ((predRect.getH() != i.getH()) || (predRect.getW() != i.getW())) {
                                                    kolIzmStor++;
@@ -305,7 +305,7 @@ public class Main {
 
                                                BufferedWriter bw = new BufferedWriter(new FileWriter(fileNameWrite));
                                                PatRectangle rectangle = null;
-                                               for (List<PatRectangle> i : patViever.getList()) {
+                                               for (List<PatRectangle> i : patViewer.getList()) {
                                                    for (PatRectangle j : i) {
                                                        String s = "";
                                                        if (rectangle != null) {
@@ -338,7 +338,7 @@ public class Main {
 
                                                try {
                                                    List<PatRectangle> list22 = PatParser.parser(new File(fileNameWrite));
-                                                   patViever.add(list22);
+                                                   patViewer.add(list22);
                                                    comboBox.addItem(fileNameWrite);
                                                } catch (Exception e1) {
                                                    JOptionPane.showMessageDialog(null, e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -366,7 +366,7 @@ public class Main {
         btn1.addActionListener(new ActionListener() {
                                    @Override
                                    public void actionPerformed(ActionEvent e) {
-                                       patViever.incX();
+                                       patViewer.incX();
                                    }
                                }
 
@@ -378,7 +378,7 @@ public class Main {
         btn4.addActionListener(new ActionListener() {
                                    @Override
                                    public void actionPerformed(ActionEvent e) {
-                                       patViever.decX();
+                                       patViewer.decX();
                                    }
                                }
         );
@@ -389,7 +389,7 @@ public class Main {
         btn2.addActionListener(new ActionListener() {
                                    @Override
                                    public void actionPerformed(ActionEvent e) {
-                                       patViever.incY();
+                                       patViewer.incY();
                                    }
                                }
         );
@@ -400,7 +400,7 @@ public class Main {
         btn3.addActionListener(new ActionListener() {
                                    @Override
                                    public void actionPerformed(ActionEvent e) {
-                                       patViever.decY();
+                                       patViewer.decY();
                                    }
                                }
         );
@@ -417,7 +417,7 @@ public class Main {
         btn5.addActionListener(new ActionListener() {
                                    @Override
                                    public void actionPerformed(ActionEvent e) {
-                                       patViever.incCenter();
+                                       patViewer.incCenter();
                                    }
                                }
         );
@@ -428,7 +428,7 @@ public class Main {
         btnOpt.addActionListener(new ActionListener() {
                                      @Override
                                      public void actionPerformed(ActionEvent e) {
-                                         patViever.optimumPosition();
+                                         patViewer.optimumPosition();
                                      }
                                  }
 
@@ -440,7 +440,7 @@ public class Main {
         btn6.addActionListener(new ActionListener() {
                                    @Override
                                    public void actionPerformed(ActionEvent e) {
-                                       patViever.decCenter();
+                                       patViewer.decCenter();
                                    }
                                }
 
@@ -451,7 +451,7 @@ public class Main {
         JCheckBox checkBox1 = new JCheckBox("Инвертировать по оси X", true);
         checkBox1.addItemListener(new ItemListener() {
                                       public void itemStateChanged(ItemEvent e) {
-                                          patViever.setReverseX(checkBox1.isSelected());
+                                          patViewer.setReverseX(checkBox1.isSelected());
                                       }
                                   }
 
@@ -461,7 +461,7 @@ public class Main {
         JCheckBox checkBox2 = new JCheckBox("Инвертировать по оси Y", true);
         checkBox2.addItemListener(new ItemListener() {
                                       public void itemStateChanged(ItemEvent e) {
-                                          patViever.setReverseY(checkBox2.isSelected());
+                                          patViewer.setReverseY(checkBox2.isSelected());
                                       }
                                   }
 
@@ -471,7 +471,7 @@ public class Main {
         JCheckBox checkBox3 = new JCheckBox("Закраска", false);
         checkBox3.addItemListener(new ItemListener() {
                                       public void itemStateChanged(ItemEvent e) {
-                                          patViever.setFfill(checkBox3.isSelected());
+                                          patViewer.setFfill(checkBox3.isSelected());
                                       }
                                   }
 
@@ -485,7 +485,7 @@ public class Main {
                                       public void actionPerformed(ActionEvent e) {
                                           if (btnTmer.getText().equals("Выводить по одному")) {
                                               btnTmer.setText("Вывести всё");
-                                              if (patViever.getListSize() > 0) {
+                                              if (patViewer.getListSize() > 0) {
                                                   fpor = true;
                                                   timer.start();
                                               } else {
@@ -495,7 +495,7 @@ public class Main {
                                               btnTmer.setText("Выводить по одному");
                                               timer.stop();
                                           }
-                                          patViever.oppositefOutput();
+                                          patViewer.oppositefOutput();
                                       }
                                   }
 
@@ -505,7 +505,7 @@ public class Main {
         x = new JProgressBar(0);
         x.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
-                patViever.setSizePercent(Double.valueOf(e.getX()) / Double.valueOf(x.getWidth()));
+                patViewer.setSizePercent(Double.valueOf(e.getX()) / Double.valueOf(x.getWidth()));
             }
         });
         buttonPanel.add(x);
@@ -577,7 +577,7 @@ public class Main {
                                      public void actionPerformed(ActionEvent e) {
                                          if (fpor) {
                                              fpor = false;
-                                             if (patViever.incSizeVisible() == patViever.getOneOutSize()) {
+                                             if (patViewer.incSizeVisible() == patViewer.getOneOutSize()) {
                                                  timer.start();
                                              }
                                              //         btnTmer.setText("Выводить в обычном порядке");
@@ -594,9 +594,9 @@ public class Main {
         buttonPanel.add(label);
         buttonPanel.add(PanelPlay);
         buttonPanel.add(PanelPlay1);
-        label1.setText("В выбранном файле " + Integer.toString(patViever.getList().get(comboBox.getSelectedIndex()).size()) + " элементов");
-        predRect = patViever.getList().get(comboBox.getSelectedIndex()).get(0);
-        for (PatRectangle i : patViever.getList().get(comboBox.getSelectedIndex())) {
+        label1.setText("В выбранном файле " + Integer.toString(patViewer.getList().get(comboBox.getSelectedIndex()).size()) + " элементов");
+        predRect = patViewer.getList().get(comboBox.getSelectedIndex()).get(0);
+        for (PatRectangle i : patViewer.getList().get(comboBox.getSelectedIndex())) {
             symProbeg = symProbeg + Math.abs(predRect.getX() - i.getX()) + Math.abs(predRect.getY() - i.getY());
             if ((predRect.getH() != i.getH()) || (predRect.getW() != i.getW())) {
                 kolIzmStor++;
@@ -625,16 +625,16 @@ public class Main {
     static javax.swing.Timer timer = new javax.swing.Timer(timerSpeed, new ActionListener() {
         public void actionPerformed(ActionEvent e) {
             if (fpor) {
-                x.setValue((int) (100f * (patViever.incSizeVisible() / patViever.getOneOutSize())));
+                x.setValue((int) (100f * (patViewer.incSizeVisible() / patViewer.getOneOutSize())));
             } else {
-                x.setValue((int) (100f * (patViever.decSizeVisible() / patViever.getOneOutSize())));
+                x.setValue((int) (100f * (patViewer.decSizeVisible() / patViewer.getOneOutSize())));
             }
         }
     });
 
     static javax.swing.Timer timer1 = new javax.swing.Timer(timerSpeed, new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-            patViever.optimumPosition();
+            patViewer.optimumPosition();
             timer1.stop();
         }
     });
@@ -788,7 +788,7 @@ public class Main {
                 ExelHW = Integer.parseInt(scoo);
                 scoo = elj.getAttribute("XY");
                 ExelXY = Integer.parseInt(scoo);
-                patViever.setSaveImag(elj.getAttribute("SaveImage"));
+                patViewer.setSaveImag(elj.getAttribute("SaveImage"));
                 try {
                     timerSpeed = Integer.parseInt(elj.getAttribute("SpeedPrint"));
                 } catch (Exception e2) {
@@ -810,17 +810,17 @@ public class Main {
                 FontX = Integer.parseInt(scoo);
                 scoo = elj.getAttribute("FontY");
                 FontY = Integer.parseInt(scoo);
-                patViever.setFontSize(FontSize);
-                patViever.setFontX(FontX);
-                patViever.setFontY(FontY);
-                patViever.setPrinter(elj.getAttribute("Printer"));
+                patViewer.setFontSize(FontSize);
+                patViewer.setFontX(FontX);
+                patViewer.setFontY(FontY);
+                patViewer.setPrinter(elj.getAttribute("Printer"));
                 scoo = elj.getAttribute("WriteName");
                 if (scoo.equals("+")) {
-                    patViever.setWriteName(true);
+                    patViewer.setWriteName(true);
                 }
                 scoo = elj.getAttribute("WriteData");
                 if (scoo.equals("+")) {
-                    patViever.setWriteData(true);
+                    patViewer.setWriteData(true);
                 }
             }
         } catch (Exception e) {
