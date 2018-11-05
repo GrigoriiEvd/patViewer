@@ -173,8 +173,7 @@ public class Main {
         btnLable.addActionListener(new ActionListener() {
                                        @Override
                                        public void actionPerformed(ActionEvent e) {
-                                           String ss = "\\";
-                                           patViewer.setNameFile(comboBox.getItemAt(comboBox.getSelectedIndex()).substring(comboBox.getItemAt(comboBox.getSelectedIndex()).lastIndexOf(ss) + 1, comboBox.getItemAt(comboBox.getSelectedIndex()).length()));
+                                           patViewer.setNameFile(Utils.extractFileName(comboBox.getItemAt(comboBox.getSelectedIndex())));
 
                                            patViewer.lableFlag();
                                        }
@@ -221,8 +220,7 @@ public class Main {
                                            patViewer.setY(y11);
                                            patViewer.setFactor(factor11);
 */
-                                           String ss = "\\";
-                                           patViewer.setNameFile(comboBox.getItemAt(comboBox.getSelectedIndex()).substring(comboBox.getItemAt(comboBox.getSelectedIndex()).lastIndexOf(ss) + 1, comboBox.getItemAt(comboBox.getSelectedIndex()).length()));
+                                           patViewer.setNameFile(Utils.extractFileName(comboBox.getItemAt(comboBox.getSelectedIndex())));
                                            patViewer.printing();
 
                                        }
