@@ -45,15 +45,12 @@ public class PatViever extends JComponent {
     private boolean ffill = false;
     private int sizeOutput = 0;
     private int max = 0;
-    private boolean vf = false;
-    private int ScreenX;
-    private int ScreenY;
     private String SaveImag = "-";
     private String nameFile = "";
     private static SimpleDateFormat formatdata = new SimpleDateFormat("dd.MM.yyyy HH:mm");
     private String Printer = "";
-    private Boolean WriteName = true;
-    private Boolean WriteData = true;
+    private Boolean writeName = true;
+    private Boolean writeData = true;
     private static Color[] colors = {Color.black, Color.red, Color.green, Color.yellow, Color.blue, Color.pink, Color.orange, Color.darkGray, Color.cyan, Color.magenta};
     private boolean flagLable;
 
@@ -124,11 +121,7 @@ public class PatViever extends JComponent {
     }
 
     public void lableFlag() {
-        if(!flagLable) {
-            flagLable = true;
-        }else{
-            flagLable = false;
-        }
+        flagLable = !flagLable;
         repaint();
     }
 
@@ -173,11 +166,11 @@ public class PatViever extends JComponent {
     }
 
     public void setWriteName(Boolean wrna) {
-        this.WriteName = wrna;
+        this.writeName = wrna;
     }
 
     public void setWriteData(Boolean wrda) {
-        this.WriteData = wrda;
+        this.writeData = wrda;
     }
 
     public void incCenter(){
@@ -237,27 +230,36 @@ public class PatViever extends JComponent {
         });
     }
 
-    public void paint(Graphics g) {
-        BufferedImage bufferedImage = null;
-        Graphics2D ig2 = null;
-        if (vf) {
-            bufferedImage = new BufferedImage(ScreenX, ScreenY, BufferedImage.TYPE_BYTE_GRAY);
-            ig2 = bufferedImage.createGraphics();
-            ig2.setColor(Color.white);
-            ig2.fillRect(0, 0, ScreenX, ScreenY);
-            ig2.setColor(Color.BLACK);
-             //   Font font = new Font("Serif", Font.ROMAN_BASELINE, 25);
-            Font font = new Font("Serif", Font.ROMAN_BASELINE, FontSize);
-            ig2.setFont(font);
-            if((WriteName)||(flagLable)) {
-                ig2.drawString(nameFile.substring(0, nameFile.indexOf(".")), FontX, FontY);
-            }
-            if((WriteData)||(flagLable)) {
-                ig2.drawString(formatdata.format(new Date().getTime()), (int) getSize().getWidth() / 2, (int) getSize().getHeight() - 20);
-            }
-             //   ig2.drawString(nameFile.substring(0, nameFile.indexOf(".")), (int) getSize().getWidth() / 2, 35);
+    public BufferedImage paintToImage() {
+        Dimension size = getSize();
+
+        BufferedImage bufferedImage = new BufferedImage(size.width, size.height, BufferedImage.TYPE_BYTE_GRAY);;
+        Graphics2D g = bufferedImage.createGraphics();
+
+        g.setColor(Color.white);
+        g.fillRect(0, 0, bufferedImage.getWidth(), bufferedImage.getHeight());
+
+        paint0(g);
+
+        g.setColor(Color.BLACK);
+
+        Font font = new Font("Serif", Font.ROMAN_BASELINE, FontSize);
+
+        g.setFont(font);
+        if(writeName || flagLable) {
+            g.drawString(nameFile.substring(0, nameFile.lastIndexOf(".")), FontX, FontY);
+            g.drawString(formatdata.format(new Date().getTime()), size.width / 2, size.height - 20);
         }
 
+        return bufferedImage;
+    }
+
+    @Override
+    public void paint(Graphics g) {
+        paint0(g);
+    }
+
+    private void paint0(Graphics g) {
         int color = 0;
         if(flagLable) {
      //       Font font = new Font("Serif", Font.ROMAN_BASELINE, 25);
@@ -274,7 +276,7 @@ public class PatViever extends JComponent {
             if (color == 10) {
                 color = 0;
             }
-            Rectangle bounds = g.getClipBounds();
+
             double mx[] = new double[4];
             double my[] = new double[4];
             int mx1[] = new int[4];
@@ -349,34 +351,18 @@ public class PatViever extends JComponent {
                     if (endFlag) {
                         g.setColor(colors[color++]);
                     }
-                    if (vf) {
-                        if (ffill) {
-                            ig2.fillPolygon(mx1, my1, 4);
-                        } else {
-                            ig2.drawPolygon(mx1, my1, 4);
-                        }
+                    if (ffill) {
+                        g.fillPolygon(mx1, my1, 4);
                     } else {
-                        if (ffill) {
-                            g.fillPolygon(mx1, my1, 4);
-                        } else {
-                            g.drawPolygon(mx1, my1, 4);
-                        }
+                        g.drawPolygon(mx1, my1, 4);
                     }
+
                     if (endFlag) {
                         g.setColor(colors[--color]);
                         endFlag = false;
                     }
                 }
             }
-        }
-        if (vf) {
-            vf = false;
-            try {
-                ImageIO.write(bufferedImage, "png", new File("image.png"));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            repaint();
         }
     }
 
@@ -493,16 +479,24 @@ public class PatViever extends JComponent {
 
 
     public void printing() {
-        ScreenX = (int) getSize().getWidth();
-        ScreenY = (int) getSize().getHeight();
-        vf = true;
-        repaint();
+        BufferedImage bufferedImage = paintToImage();
+
+        File tempFile = new File("image.png");
+
+        try {
+            ImageIO.write(bufferedImage, "png", tempFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Failed to save image to " + tempFile.getAbsolutePath(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
 
         PrintRequestAttributeSet pras = new HashPrintRequestAttributeSet();
         pras.add(new Copies(1));
         PrintService pss[] = PrintServiceLookup.lookupPrintServices(DocFlavor.INPUT_STREAM.GIF, pras);
-        if (pss.length == 0)
-            throw new RuntimeException("No printer services available.");
+        if (pss.length == 0) {
+            JOptionPane.showMessageDialog(null, "Printer not found, screenshot has been saved to  " + tempFile.getAbsolutePath());
+            return;
+        }
 
         String input ="";
         for (int i = 0; i < pss.length; i++) {
@@ -511,14 +505,14 @@ public class PatViever extends JComponent {
             }
         }
         if(input.equals("")){
-            String s7 = "";
+            StringBuilder s7 = new StringBuilder();
             for (int i = 0; i < pss.length; i++) {
-                s7 = s7 + pss[i].getName() + " Введите " + Integer.toString(i) + "\n";
+                s7.append(pss[i].getName()).append(" Введите ").append(Integer.toString(i)).append("\n");
             }
-            input = JOptionPane.showInputDialog(s7);
+            input = JOptionPane.showInputDialog(s7.toString());
         }
 
-        PrintService ps = pss[Integer.decode(input)];
+        PrintService ps = pss[Integer.parseInt(input)];
         DocPrintJob job = ps.createPrintJob();
         FileInputStream fin = null;
         try {
