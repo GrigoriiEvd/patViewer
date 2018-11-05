@@ -282,7 +282,7 @@ public class PatViewer extends JComponent {
             int mx1[] = new int[4];
             int my1[] = new int[4];
             int k = 0;
-            boolean flcol = true;
+
             for (PatRectangle i : list1) {
                 boolean endFlag = false;
                 if ((sizeOutput > k) || (!fOneOutput)) {
@@ -291,16 +291,12 @@ public class PatViewer extends JComponent {
                     }
 
                     k++;
-                    mx[0] = i.getX() - (i.getW() / 2);
-                    mx[1] = i.getX() + (i.getW() / 2);
-                    mx[2] = i.getX() + (i.getW() / 2);
-                    mx[3] = i.getX() - (i.getW() / 2);
 
-                    my[0] = i.getY() + (i.getH() / 2);
-                    my[1] = i.getY() + (i.getH() / 2);
-                    my[2] = i.getY() - (i.getH() / 2);
-                    my[3] = i.getY() - (i.getH() / 2);
+                    mx[0] = mx[3] = i.getX() - (i.getW() / 2);
+                    mx[1] = mx[2] = i.getX() + (i.getW() / 2);
 
+                    my[0] = my[1] = i.getY() + (i.getH() / 2);
+                    my[2] = my[3] = i.getY() - (i.getH() / 2);
 
                     if (reverseX) {
                         for (int j = 0; j < 4; j++) {
