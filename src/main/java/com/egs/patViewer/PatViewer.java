@@ -9,8 +9,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
@@ -189,20 +187,17 @@ public class PatViewer extends JComponent {
     }
 
     public PatViewer() {
-        addMouseWheelListener(new MouseWheelListener() {
-            @Override
-            public void mouseWheelMoved(MouseWheelEvent e) {
-                if (e.getUnitsToScroll() == 3) {
-                    x = x + (int) ((e.getX() - x) * 0.1);
-                    y = y + (int) ((e.getY() - y) * 0.1);
-                    factor *= 0.9;
-                    repaint();
-                } else {
-                    x = x - (int) ((e.getX() - x) * 0.1);
-                    y = y - (int) ((e.getY() - y) * 0.1);
-                    factor *= 1.1;
-                    repaint();
-                }
+        addMouseWheelListener(e -> {
+            if (e.getUnitsToScroll() == 3) {
+                x = x + (int) ((e.getX() - x) * 0.1);
+                y = y + (int) ((e.getY() - y) * 0.1);
+                factor *= 0.9;
+                repaint();
+            } else {
+                x = x - (int) ((e.getX() - x) * 0.1);
+                y = y - (int) ((e.getY() - y) * 0.1);
+                factor *= 1.1;
+                repaint();
             }
         });
 
@@ -252,7 +247,7 @@ public class PatViewer extends JComponent {
     public BufferedImage paintToImage() {
         Dimension size = getSize();
 
-        BufferedImage bufferedImage = new BufferedImage(size.width, size.height, BufferedImage.TYPE_BYTE_GRAY);;
+        BufferedImage bufferedImage = new BufferedImage(size.width, size.height, BufferedImage.TYPE_BYTE_GRAY);
         Graphics2D g = bufferedImage.createGraphics();
 
         g.setColor(Color.white);
@@ -262,7 +257,7 @@ public class PatViewer extends JComponent {
 
         g.setColor(Color.BLACK);
 
-        Font font = new Font("Serif", Font.ROMAN_BASELINE, FontSize);
+        Font font = new Font("Serif", Font.PLAIN, FontSize);
 
         g.setFont(font);
         if(writeName || flagLable) {

@@ -11,7 +11,10 @@ import javax.swing.filechooser.FileFilter;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -95,7 +98,7 @@ public class Main {
         JFrame f = new JFrame();
         f.setTitle("Drawing Graphics in Frames");
         f.setExtendedState(JFrame.MAXIMIZED_BOTH);
-        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         JPanel viewerPanel = new JPanel(new BorderLayout());
         viewerPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
         viewerPanel.add(patViewer, BorderLayout.CENTER);
@@ -110,249 +113,218 @@ public class Main {
 
         JComboBox<String> comboBox = new JComboBox<>();
 
-        comboBox.addActionListener(new ActionListener() {
-                                       @Override
-                                       public void actionPerformed(ActionEvent e) {
-                                           if (comboBox.getItemCount() > 0) {
-                                               label1.setText("В выбранном файле " + Integer.toString(patViewer.getList().get(comboBox.getSelectedIndex()).size()) + " элементов   ");
-                                               int symProbeg = 0;
-                                               int kolIzmStor = 0;
-                                               int kolIzmYgl = 0;
-                                               PatRectangle predRect = patViewer.getList().get(comboBox.getSelectedIndex()).get(0);
-                                               for (PatRectangle i : patViewer.getList().get(comboBox.getSelectedIndex())) {
-                                                   symProbeg = symProbeg + Math.abs(predRect.getX() - i.getX()) + Math.abs(predRect.getY() - i.getY());
-                                                   if ((predRect.getH() != i.getH()) || (predRect.getW() != i.getW())) {
-                                                       kolIzmStor++;
-                                                   }
-                                                   if ((predRect.getA() != i.getA())) {
-                                                       kolIzmYgl++;
-                                                   }
-                                                   predRect = i;
-                                               }
-                                               label2.setText("Cуммарный пробег по X/Y " + String.format("%.1f", (Float.valueOf(symProbeg) / Float.valueOf(1000000))) + "   ");
-                                               label3.setText("Изменение шторки " + Integer.toString(kolIzmStor) + "   ");
-                                               label4.setText("Изменение угла поворота " + Integer.toString(kolIzmYgl) + "   ");
-                                           } else {
-                                               label1.setText("");
-                                               label2.setText("");
-                                               label3.setText("");
-                                               label4.setText("");
-                                           }
-                                       }
-                                   }
-        );
+        comboBox.addActionListener(e -> {
+            if (comboBox.getItemCount() > 0) {
+                label1.setText("В выбранном файле " + Integer.toString(patViewer.getList().get(comboBox.getSelectedIndex()).size()) + " элементов   ");
+                int symProbeg = 0;
+                int kolIzmStor = 0;
+                int kolIzmYgl = 0;
+                PatRectangle predRect = patViewer.getList().get(comboBox.getSelectedIndex()).get(0);
+                for (PatRectangle i : patViewer.getList().get(comboBox.getSelectedIndex())) {
+                    symProbeg = symProbeg + Math.abs(predRect.getX() - i.getX()) + Math.abs(predRect.getY() - i.getY());
+                    if ((predRect.getH() != i.getH()) || (predRect.getW() != i.getW())) {
+                        kolIzmStor++;
+                    }
+                    if ((predRect.getA() != i.getA())) {
+                        kolIzmYgl++;
+                    }
+                    predRect = i;
+                }
+                label2.setText("Cуммарный пробег по X/Y " + String.format("%.1f", ((float) symProbeg / 1000000f)) + "   ");
+                label3.setText("Изменение шторки " + Integer.toString(kolIzmStor) + "   ");
+                label4.setText("Изменение угла поворота " + Integer.toString(kolIzmYgl) + "   ");
+            } else {
+                label1.setText("");
+                label2.setText("");
+                label3.setText("");
+                label4.setText("");
+            }
+        });
+
         JButton btnClear = new JButton("Очистить");
-        btnClear.addActionListener(new ActionListener() {
-                                       @Override
-                                       public void actionPerformed(ActionEvent e) {
-                                           if (patViewer.getLableFlag()) {
-                                               patViewer.lableFlag();
-                                           }
-                                           patViewer.clearList();
-                                           comboBox.removeAllItems();
-                                       }
-                                   }
-        );
+        btnClear.addActionListener(e -> {
+            if (patViewer.getLableFlag()) {
+                patViewer.lableFlag();
+            }
+            patViewer.clearList();
+            comboBox.removeAllItems();
+        });
         buttonPanel.add(Box.createVerticalStrut(20));
         JButton btnOpen = new JButton("Открыть и вывести новый файл");
-        btnOpen.addActionListener(new ActionListener() {
-                                      @Override
-                                      public void actionPerformed(ActionEvent e) {
-                                          File file = openFile();
-                                          if (file != null) {
-                                              try {
-                                                  patViewer.addFile(file);
-                                                  comboBox.addItem(file.getAbsolutePath());
-                                              } catch (IOException e1) {
-                                                  e1.printStackTrace();
-                                                  JOptionPane.showMessageDialog(null, "Failed to opne file: " + e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                                              }
-                                          }
-                                      }
-                                  }
-        );
+        btnOpen.addActionListener(e -> {
+            File file12 = openFile();
+            if (file12 != null) {
+                try {
+                    patViewer.addFile(file12);
+                    comboBox.addItem(file12.getAbsolutePath());
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Failed to opne file: " + e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+        
         menuPanel.add(btnOpen);
         JButton btnLable = new JButton("Название файла");
-        btnLable.addActionListener(new ActionListener() {
-                                       @Override
-                                       public void actionPerformed(ActionEvent e) {
-                                           patViewer.setNameFile(Utils.extractFileName(comboBox.getItemAt(comboBox.getSelectedIndex())));
+        btnLable.addActionListener(e -> {
+            patViewer.setNameFile(Utils.extractFileName(comboBox.getItemAt(comboBox.getSelectedIndex())));
 
-                                           patViewer.lableFlag();
-                                       }
-                                   }
+            patViewer.lableFlag();
+        });
 
-        );
         menuPanel.add(btnLable);
         JButton btnPrint = new JButton("Напечатать на принтере");
-        btnPrint.addActionListener(new ActionListener() {
-                                       @Override
-                                       public void actionPerformed(ActionEvent e) {
+        btnPrint.addActionListener(e -> {
 
 /*
-                                           int x11=patViewer.getX();
-                                           int y11=patViewer.getY();
-                                           float factor11=patViewer.getFactor();
+            int x11=patViewer.getX();
+            int y11=patViewer.getY();
+            float factor11=patViewer.getFactor();
 
-                                           if (patViewer.getLableFlag()) {
-                                               patViewer.lableFlag();
-                                           }
-                                           patViewer.clearList();
-                                         //  comboBox.removeAllItems();
-                                           int scet=comboBox.getItemCount();
+            if (patViewer.getLableFlag()) {
+                patViewer.lableFlag();
+            }
+            patViewer.clearList();
+          //  comboBox.removeAllItems();
+            int scet=comboBox.getItemCount();
 
-                                           for (int i=0; i< scet; i++){
-                                                   List<PatRectangle> list1;
-                                                   try {
-                                                       String fileName = comboBox.getItemAt(i);
-                                                       if (fileName.endsWith(".xls")) {
-                                                           list1 = ExelParser.parser(fileName);
-                                                           patViewer.add(list1);
-                                                       } else {
-                                                           list1 = patParser.parser(fileName);
-                                                           patViewer.add(list1);
-                                                       }
+            for (int i=0; i< scet; i++){
+                    List<PatRectangle> list1;
+                    try {
+                        String fileName = comboBox.getItemAt(i);
+                        if (fileName.endsWith(".xls")) {
+                            list1 = ExelParser.parser(fileName);
+                            patViewer.add(list1);
+                        } else {
+                            list1 = patParser.parser(fileName);
+                            patViewer.add(list1);
+                        }
 
 
-                                                   } catch (Exception e1) {
-                                                       JOptionPane.showMessageDialog(null, e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                                                   }
+                    } catch (Exception e1) {
+                        JOptionPane.showMessageDialog(null, e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    }
 
-                                           }
-                                           patViewer.setX(x11);
-                                           patViewer.setY(y11);
-                                           patViewer.setFactor(factor11);
+            }
+            patViewer.setX(x11);
+            patViewer.setY(y11);
+            patViewer.setFactor(factor11);
 */
-                                           patViewer.setNameFile(Utils.extractFileName(comboBox.getItemAt(comboBox.getSelectedIndex())));
-                                           patViewer.printing();
+            patViewer.setNameFile(Utils.extractFileName(comboBox.getItemAt(comboBox.getSelectedIndex())));
+            patViewer.printing();
 
-                                       }
-                                   }
+        });
 
-        );
         menuPanel.add(btnPrint);
         menuPanel.add(comboBox);
         JButton btnOptimKv = new JButton("Оптимизировать файл с блоками");
-        btnOptimKv.addActionListener(new ActionListener() {
-                                         @Override
-                                         public void actionPerformed(ActionEvent e) {
-                                             symProbeg = 0;
-                                             kolIzmStor = 0;
-                                             kolIzmYgl = 0;
-                                             patViewer.setList(comboBox.getSelectedIndex(), OptimumPat1(patViewer.getList().get(comboBox.getSelectedIndex())));
-                                             patViewer.optimumPosition();
-                                             for (PatRectangle i : patViewer.getList().get(comboBox.getSelectedIndex())) {
-                                                 symProbeg = symProbeg + Math.abs(predRect.getX() - i.getX()) + Math.abs(predRect.getY() - i.getY());
-                                                 if ((predRect.getH() != i.getH()) || (predRect.getW() != i.getW())) {
-                                                     kolIzmStor++;
-                                                 }
-                                                 if ((predRect.getA() != i.getA())) {
-                                                     kolIzmYgl++;
-                                                 }
-                                                 predRect = i;
-                                             }
-                                             label2.setText("Cуммарный пробег по X/Y " + String.format("%.1f", (Float.valueOf(symProbeg) / Float.valueOf(1000000))) + "   ");
-                                             label3.setText("Изменение шторки " + Integer.toString(kolIzmStor) + "   ");
-                                             label4.setText("Изменение угла поворота " + Integer.toString(kolIzmYgl) + "   ");
-                                         }
-                                     }
-        );
+        btnOptimKv.addActionListener(e -> {
+            symProbeg = 0;
+            kolIzmStor = 0;
+            kolIzmYgl = 0;
+            patViewer.setList(comboBox.getSelectedIndex(), OptimumPat1(patViewer.getList().get(comboBox.getSelectedIndex())));
+            patViewer.optimumPosition();
+            for (PatRectangle i : patViewer.getList().get(comboBox.getSelectedIndex())) {
+                symProbeg = symProbeg + Math.abs(predRect.getX() - i.getX()) + Math.abs(predRect.getY() - i.getY());
+                if ((predRect.getH() != i.getH()) || (predRect.getW() != i.getW())) {
+                    kolIzmStor++;
+                }
+                if ((predRect.getA() != i.getA())) {
+                    kolIzmYgl++;
+                }
+                predRect = i;
+            }
+            label2.setText("Cуммарный пробег по X/Y " + String.format("%.1f", (symProbeg / 1000000f)) + "   ");
+            label3.setText("Изменение шторки " + Integer.toString(kolIzmStor) + "   ");
+            label4.setText("Изменение угла поворота " + Integer.toString(kolIzmYgl) + "   ");
+        });
 
         JButton btnOptim = new JButton("Оптимизировать файл");
-        btnOptim.addActionListener(new ActionListener() {
-                                       @Override
-                                       public void actionPerformed(ActionEvent e) {
-                                           symProbeg = 0;
-                                           kolIzmStor = 0;
-                                           kolIzmYgl = 0;
-                                           patViewer.setList(comboBox.getSelectedIndex(), OptimumPat(patViewer.getList().get(comboBox.getSelectedIndex())));
-                                           patViewer.optimumPosition();
-                                           for (PatRectangle i : patViewer.getList().get(comboBox.getSelectedIndex())) {
-                                               symProbeg = symProbeg + Math.abs(predRect.getX() - i.getX()) + Math.abs(predRect.getY() - i.getY());
-                                               if ((predRect.getH() != i.getH()) || (predRect.getW() != i.getW())) {
-                                                   kolIzmStor++;
-                                               }
-                                               if ((predRect.getA() != i.getA())) {
-                                                   kolIzmYgl++;
-                                               }
-                                               predRect = i;
-                                           }
-                                           label2.setText("Cуммарный пробег по X/Y " + String.format("%.1f", (Float.valueOf(symProbeg) / Float.valueOf(1000000))) + "   ");
-                                           label3.setText("Изменение шторки " + Integer.toString(kolIzmStor) + "   ");
-                                           label4.setText("Изменение угла поворота " + Integer.toString(kolIzmYgl) + "   ");
-                                       }
-                                   }
+        btnOptim.addActionListener(e -> {
+            symProbeg = 0;
+            kolIzmStor = 0;
+            kolIzmYgl = 0;
+            patViewer.setList(comboBox.getSelectedIndex(), OptimumPat(patViewer.getList().get(comboBox.getSelectedIndex())));
+            patViewer.optimumPosition();
+            for (PatRectangle i : patViewer.getList().get(comboBox.getSelectedIndex())) {
+                symProbeg = symProbeg + Math.abs(predRect.getX() - i.getX()) + Math.abs(predRect.getY() - i.getY());
+                if ((predRect.getH() != i.getH()) || (predRect.getW() != i.getW())) {
+                    kolIzmStor++;
+                }
+                if ((predRect.getA() != i.getA())) {
+                    kolIzmYgl++;
+                }
+                predRect = i;
+            }
+            label2.setText("Cуммарный пробег по X/Y " + String.format("%.1f", (symProbeg / 1000000f)) + "   ");
+            label3.setText("Изменение шторки " + Integer.toString(kolIzmStor) + "   ");
+            label4.setText("Изменение угла поворота " + Integer.toString(kolIzmYgl) + "   ");
+        });
 
-        );
         menuPanel.add(btnOptim);
         JButton btn0 = new JButton("Сохранить");
-        btn0.addActionListener(new ActionListener() {
-                                   @Override
-                                   public void actionPerformed(ActionEvent e) {
-                                       File file1 = null;
-                                       JFileChooser fileopen = new JFileChooser(saveCatalog);
-                                       int ret = fileopen.showDialog(null, "Save File");
-                                       if (ret == JFileChooser.APPROVE_OPTION) {
-                                           file1 = fileopen.getSelectedFile();
-                                           try {
-                                               String fileNameWrite = file1.getCanonicalPath();
-                                               if (fileNameWrite.length() > 4) {
-                                                   if (fileNameWrite.charAt(fileNameWrite.length() - 4) != '.') {
-                                                       fileNameWrite = fileNameWrite + ".opg";
-                                                   }
-                                               } else {
-                                                   fileNameWrite = fileNameWrite + ".opg";
-                                               }
+        btn0.addActionListener(e -> {
+            JFileChooser fileopen = new JFileChooser(saveCatalog);
+            int ret = fileopen.showDialog(null, "Save File");
+            if (ret == JFileChooser.APPROVE_OPTION) {
+                File file1 = fileopen.getSelectedFile();
+                try {
+                    String fileNameWrite = file1.getCanonicalPath();
+                    if (fileNameWrite.length() > 4) {
+                        if (fileNameWrite.charAt(fileNameWrite.length() - 4) != '.') {
+                            fileNameWrite = fileNameWrite + ".opg";
+                        }
+                    } else {
+                        fileNameWrite = fileNameWrite + ".opg";
+                    }
 
-                                               BufferedWriter bw = new BufferedWriter(new FileWriter(fileNameWrite));
-                                               PatRectangle rectangle = null;
-                                               for (List<PatRectangle> i : patViewer.getList()) {
-                                                   for (PatRectangle j : i) {
-                                                       String s = "";
-                                                       if (rectangle != null) {
-                                                           if (rectangle.getX() != j.getX()) {
-                                                               s = s + "X" + Integer.toString(j.getX());
-                                                           }
-                                                           if (rectangle.getY() != j.getY()) {
-                                                               s = s + "Y" + Integer.toString(j.getY());
-                                                           }
-                                                           if (rectangle.getH() != j.getH()) {
-                                                               s = s + "H" + Integer.toString(j.getH());
-                                                           }
-                                                           if (rectangle.getW() != j.getW()) {
-                                                               s = s + "W" + Integer.toString(j.getW());
-                                                           }
-                                                           if (rectangle.getA() != j.getA()) {
-                                                               s = s + "A" + Integer.toString(j.getA());
-                                                           }
-                                                           bw.write(s + ";");
-                                                       } else {
-                                                           bw.write("X" + Integer.toString(j.getX()) + "Y" + Integer.toString(j.getY()) + "H" + Integer.toString(j.getH()) + "W" + Integer.toString(j.getW()) + "A" + Integer.toString(j.getA()) + ";");
-                                                       }
-                                                       bw.newLine();
-                                                       rectangle = j;
-                                                   }
-                                               }
-                                               bw.write("$;");
-                                               bw.close();
-                                               btnClear.doClick();
+                    BufferedWriter bw = new BufferedWriter(new FileWriter(fileNameWrite));
+                    PatRectangle rectangle = null;
+                    for (List<PatRectangle> i : patViewer.getList()) {
+                        for (PatRectangle j : i) {
+                            String s = "";
+                            if (rectangle != null) {
+                                if (rectangle.getX() != j.getX()) {
+                                    s = s + "X" + Integer.toString(j.getX());
+                                }
+                                if (rectangle.getY() != j.getY()) {
+                                    s = s + "Y" + Integer.toString(j.getY());
+                                }
+                                if (rectangle.getH() != j.getH()) {
+                                    s = s + "H" + Integer.toString(j.getH());
+                                }
+                                if (rectangle.getW() != j.getW()) {
+                                    s = s + "W" + Integer.toString(j.getW());
+                                }
+                                if (rectangle.getA() != j.getA()) {
+                                    s = s + "A" + Integer.toString(j.getA());
+                                }
+                                bw.write(s + ";");
+                            } else {
+                                bw.write("X" + Integer.toString(j.getX()) + "Y" + Integer.toString(j.getY()) + "H" + Integer.toString(j.getH()) + "W" + Integer.toString(j.getW()) + "A" + Integer.toString(j.getA()) + ";");
+                            }
+                            bw.newLine();
+                            rectangle = j;
+                        }
+                    }
+                    bw.write("$;");
+                    bw.close();
+                    btnClear.doClick();
 
-                                               try {
-                                                   List<PatRectangle> list22 = PatParser.parser(new File(fileNameWrite));
-                                                   patViewer.add(list22);
-                                                   comboBox.addItem(fileNameWrite);
-                                               } catch (Exception e1) {
-                                                   JOptionPane.showMessageDialog(null, e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                                               }
+                    try {
+                        List<PatRectangle> list22 = PatParser.parser(new File(fileNameWrite));
+                        patViewer.add(list22);
+                        comboBox.addItem(fileNameWrite);
+                    } catch (Exception e1) {
+                        JOptionPane.showMessageDialog(null, e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    }
 
-                                           } catch (IOException e1) {
-                                               JOptionPane.showMessageDialog(null, e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                                           }
-                                       }
-                                   }
-                               }
+                } catch (IOException e1) {
+                    JOptionPane.showMessageDialog(null, e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
 
-        );
         menuPanel.add(btn0);
         if (file != null) {
             comboBox.addItem(file.getAbsolutePath());
@@ -364,47 +336,22 @@ public class Main {
         JPanel PanelPointer1 = new JPanel();
         JButton btn1 = new JButton("◄");
         btn1.setToolTipText("Переместить изображение влево");
-        btn1.addActionListener(new ActionListener() {
-                                   @Override
-                                   public void actionPerformed(ActionEvent e) {
-                                       patViewer.incX();
-                                   }
-                               }
-
-        );
+        btn1.addActionListener(e -> patViewer.incX());
         PanelPointer.add(btn1);
         //   buttonPanel.add(Box.createVerticalStrut(20));
         JButton btn4 = new JButton("►");
         btn4.setToolTipText("Переместить изображение вправо");
-        btn4.addActionListener(new ActionListener() {
-                                   @Override
-                                   public void actionPerformed(ActionEvent e) {
-                                       patViewer.decX();
-                                   }
-                               }
-        );
+        btn4.addActionListener(e -> patViewer.decX());
         PanelPointer.add(btn4);
         // buttonPanel.add(Box.createVerticalStrut(20));
         JButton btn2 = new JButton("▲");
         btn2.setToolTipText("Переместить изображение вверх");
-        btn2.addActionListener(new ActionListener() {
-                                   @Override
-                                   public void actionPerformed(ActionEvent e) {
-                                       patViewer.incY();
-                                   }
-                               }
-        );
+        btn2.addActionListener(e -> patViewer.incY());
         PanelPointer1.add(btn2);
         //  buttonPanel.add(Box.createVerticalStrut(20));
         JButton btn3 = new JButton("▼");
         btn3.setToolTipText("Переместить изображение вниз");
-        btn3.addActionListener(new ActionListener() {
-                                   @Override
-                                   public void actionPerformed(ActionEvent e) {
-                                       patViewer.decY();
-                                   }
-                               }
-        );
+        btn3.addActionListener(e -> patViewer.decY());
         PanelPointer1.add(btn3);
         //  buttonPanel.add(Box.createVerticalStrut(20));
         buttonPanel.add(btnOptimKv);
@@ -415,181 +362,123 @@ public class Main {
         JPanel PanelSize = new JPanel();
         JButton btn5 = new JButton("+");
         btn5.setToolTipText("Приблизить изображение");
-        btn5.addActionListener(new ActionListener() {
-                                   @Override
-                                   public void actionPerformed(ActionEvent e) {
-                                       patViewer.incCenter();
-                                   }
-                               }
-        );
+        btn5.addActionListener(e -> patViewer.incCenter());
         PanelSize.add(btn5);
         //   buttonPanel.add(Box.createVerticalStrut(20));
         JButton btnOpt = new JButton("⌂");
         btnOpt.setToolTipText("Установить оптимальную позицию чертежа");
-        btnOpt.addActionListener(new ActionListener() {
-                                     @Override
-                                     public void actionPerformed(ActionEvent e) {
-                                         patViewer.optimumPosition();
-                                     }
-                                 }
-
-        );
+        btnOpt.addActionListener(e -> patViewer.optimumPosition());
         PanelSize.add(btnOpt);
         //  buttonPanel.add(Box.createVerticalStrut(20));
         JButton btn6 = new JButton("-");
         btn6.setToolTipText("Отдалить изображение");
-        btn6.addActionListener(new ActionListener() {
-                                   @Override
-                                   public void actionPerformed(ActionEvent e) {
-                                       patViewer.decCenter();
-                                   }
-                               }
-
-        );
+        btn6.addActionListener(e -> patViewer.decCenter());
         PanelSize.add(btn6);
         buttonPanel.add(PanelSize);
         // buttonPanel.add(Box.createVerticalStrut(20));
         JCheckBox checkBox1 = new JCheckBox("Инвертировать по оси X", true);
-        checkBox1.addItemListener(new ItemListener() {
-                                      public void itemStateChanged(ItemEvent e) {
-                                          patViewer.setReverseX(checkBox1.isSelected());
-                                      }
-                                  }
-
-        );
+        checkBox1.addItemListener(e -> patViewer.setReverseX(checkBox1.isSelected()));
         buttonPanel.add(checkBox1);
         buttonPanel.add(Box.createVerticalStrut(20));
         JCheckBox checkBox2 = new JCheckBox("Инвертировать по оси Y", true);
-        checkBox2.addItemListener(new ItemListener() {
-                                      public void itemStateChanged(ItemEvent e) {
-                                          patViewer.setReverseY(checkBox2.isSelected());
-                                      }
-                                  }
-
-        );
+        checkBox2.addItemListener(e -> patViewer.setReverseY(checkBox2.isSelected()));
         buttonPanel.add(checkBox2);
         buttonPanel.add(Box.createVerticalStrut(20));
         JCheckBox checkBox3 = new JCheckBox("Закраска", false);
-        checkBox3.addItemListener(new ItemListener() {
-                                      public void itemStateChanged(ItemEvent e) {
-                                          patViewer.setFfill(checkBox3.isSelected());
-                                      }
-                                  }
-
-        );
+        checkBox3.addItemListener(e -> patViewer.setFfill(checkBox3.isSelected()));
         buttonPanel.add(checkBox3);
         buttonPanel.add(Box.createVerticalStrut(20));
         JButton btnTmer = new JButton("Выводить по одному");
         btnTmer.setToolTipText("Вывод изображения последовательно по одному прямоугольнику, с регулируемой скоростью");
-        btnTmer.addActionListener(new ActionListener() {
-                                      @Override
-                                      public void actionPerformed(ActionEvent e) {
-                                          if (btnTmer.getText().equals("Выводить по одному")) {
-                                              btnTmer.setText("Вывести всё");
-                                              if (patViewer.getListSize() > 0) {
-                                                  fpor = true;
-                                                  timer.start();
-                                              } else {
-                                                  x.setValue(100);
-                                              }
-                                          } else {
-                                              btnTmer.setText("Выводить по одному");
-                                              timer.stop();
-                                          }
-                                          patViewer.oppositefOutput();
-                                      }
-                                  }
+        btnTmer.addActionListener(e -> {
+            if (btnTmer.getText().equals("Выводить по одному")) {
+                btnTmer.setText("Вывести всё");
+                if (patViewer.getListSize() > 0) {
+                    fpor = true;
+                    timer.start();
+                } else {
+                    x.setValue(100);
+                }
+            } else {
+                btnTmer.setText("Выводить по одному");
+                timer.stop();
+            }
+            patViewer.oppositefOutput();
+        });
 
-        );
         buttonPanel.add(btnTmer);
         buttonPanel.add(Box.createVerticalStrut(20));
         x = new JProgressBar(0);
         x.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
-                patViewer.setSizePercent(Double.valueOf(e.getX()) / Double.valueOf(x.getWidth()));
+                patViewer.setSizePercent((double) e.getX() / x.getWidth());
             }
         });
         buttonPanel.add(x);
         buttonPanel.add(Box.createVerticalStrut(20));
-        JLabel label = new JLabel("Скорость " + Double.toString(Double.valueOf(1000) / Double.valueOf(timerSpeed)) + " в секунду");
+        JLabel label = new JLabel("Скорость " + Double.toString(1000d / timerSpeed) + " в секунду");
         //  JLabel label = new JLabel("");
         JPanel PanelPlay = new JPanel();
         JPanel PanelPlay1 = new JPanel();
         JButton btnFast = new JButton(">>");
         btnFast.setToolTipText("Ускорить вывод элементов");
-        btnFast.addActionListener(new ActionListener() {
-                                      @Override
-                                      public void actionPerformed(ActionEvent e) {
-                                          String s = Float.toString(1000f / timerFast());
-                                          int si = s.indexOf('.');
-                                          if (s.length() - si > 1) {
-                                              s = s.substring(0, si + 2);
-                                          }
-                                          label.setText("Скорость " + s + " в секунду");
-                                      }
-                                  }
+        btnFast.addActionListener(e -> {
+            String s = Float.toString(1000f / timerFast());
+            int si = s.indexOf('.');
+            if (s.length() - si > 1) {
+                s = s.substring(0, si + 2);
+            }
+            label.setText("Скорость " + s + " в секунду");
+        });
 
-        );
         //  buttonPanel.add(Box.createVerticalStrut(20));
         JButton btnslow = new JButton("<<");
         btnslow.setToolTipText("Замедлить вывод элементов");
-        btnslow.addActionListener(new ActionListener() {
-                                      @Override
-                                      public void actionPerformed(ActionEvent e) {
-                                          timerSlow();
-                                          String s = Float.toString(1000f / timerSpeed);
-                                          int si = s.indexOf('.');
-                                          if (s.length() - si > 1) {
-                                              s = s.substring(0, si + 2);
-                                          }
-                                          label.setText("Скорость " + s + " в секунду");
-                                      }
-                                  }
+        btnslow.addActionListener(e -> {
+            timerSlow();
+            String s = Float.toString(1000f / timerSpeed);
+            int si = s.indexOf('.');
+            if (s.length() - si > 1) {
+                s = s.substring(0, si + 2);
+            }
+            label.setText("Скорость " + s + " в секунду");
+        });
 
-        );
         PanelPlay.add(btnslow);
         PanelPlay.add(btnFast);
         //   buttonPanel.add(Box.createVerticalStrut(20));
         JButton btnStop = new JButton("Остановить вывод");
         btnStop.setToolTipText("Остановить вывод элементов");
-        btnStop.addActionListener(new ActionListener() {
-                                      @Override
-                                      public void actionPerformed(ActionEvent e) {
-                                          if (btnStop.getText().equals("Остановить вывод")) {
-                                              timerSpeed = 1000;
-                                              label.setText("Скорость " + Float.toString(1000f / timerSpeed) + " в секунду");
-                                              timer.stop();
-                                              btnStop.setText("Возобновить вывод");
-                                          } else {
-                                              timer.setDelay(timerSpeed);
-                                              timer.start();
-                                              btnStop.setText("Остановить вывод");
-                                          }
-                                      }
-                                  }
+        btnStop.addActionListener(e -> {
+            if (btnStop.getText().equals("Остановить вывод")) {
+                timerSpeed = 1000;
+                label.setText("Скорость " + Float.toString(1000f / timerSpeed) + " в секунду");
+                timer.stop();
+                btnStop.setText("Возобновить вывод");
+            } else {
+                timer.setDelay(timerSpeed);
+                timer.start();
+                btnStop.setText("Остановить вывод");
+            }
+        });
 
-        );
         PanelPlay1.add(btnStop);
         //   buttonPanel.add(Box.createVerticalStrut(20));
         JButton btnNaz = new JButton("Ɔ/с");
         btnNaz.setToolTipText("Вывод элементов задом наперед");
-        btnNaz.addActionListener(new ActionListener() {
-                                     @Override
-                                     public void actionPerformed(ActionEvent e) {
-                                         if (fpor) {
-                                             fpor = false;
-                                             if (patViewer.incSizeVisible() == patViewer.getOneOutSize()) {
-                                                 timer.start();
-                                             }
-                                             //         btnTmer.setText("Выводить в обычном порядке");
-                                         } else {
-                                             fpor = true;
-                                             //         btnTmer.setText("Выводить в обратном порядке");
-                                         }
-                                     }
-                                 }
+        btnNaz.addActionListener(e -> {
+            if (fpor) {
+                fpor = false;
+                if (patViewer.incSizeVisible() == patViewer.getOneOutSize()) {
+                    timer.start();
+                }
+                //         btnTmer.setText("Выводить в обычном порядке");
+            } else {
+                fpor = true;
+                //         btnTmer.setText("Выводить в обратном порядке");
+            }
+        });
 
-        );
         PanelPlay1.add(btnNaz);
         // buttonPanel.add(Box.createVerticalStrut(20));
         buttonPanel.add(label);
@@ -607,7 +496,7 @@ public class Main {
             }
             predRect = i;
         }
-        label2.setText("Cуммарный пробег по X/Y " + String.format("%.1f", (Float.valueOf(symProbeg) / Float.valueOf(1000000))) + "   ");
+        label2.setText("Cуммарный пробег по X/Y " + String.format("%.1f", (symProbeg / 1000000f)) + "   ");
         //  label2.setText("Cуммарный пробег по X/Y " + Float.toString(symProbeg)+"   ");
         label3.setText("Изменение шторки " + Integer.toString(kolIzmStor) + "   ");
         label4.setText("Изменение угла поворота " + Integer.toString(kolIzmYgl) + "   ");
@@ -622,9 +511,7 @@ public class Main {
         f.setVisible(true);
 
         Thread.sleep(100);
-        SwingUtilities.invokeLater(() -> {
-            patViewer.optimumPosition();
-        });
+        SwingUtilities.invokeLater(() -> patViewer.optimumPosition());
     }
 
     static javax.swing.Timer timer = new javax.swing.Timer(timerSpeed, new ActionListener() {
