@@ -18,9 +18,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 
 public class Main {
+
+    private static final String[] EXTENSIONS = {".pat", ".xls", ".opt", ".opg"};
 
     private static int timerSpeed = 500;
     private static String workCatalog;
@@ -47,12 +50,12 @@ public class Main {
         fileopen.setFileFilter(new FileFilter() {
             @Override
             public boolean accept(File f) {
-                return f.getName().endsWith(".pat") || f.getName().endsWith(".xls") || f.isDirectory();
+                return Stream.of(EXTENSIONS).anyMatch(e -> f.getName().toLowerCase().endsWith(e)) || f.isDirectory();
             }
 
             @Override
             public String getDescription() {
-                return "*.pat or *.xls files";
+                return "*.pat, *.xls, *.opt, *.opg";
             }
         });
 
