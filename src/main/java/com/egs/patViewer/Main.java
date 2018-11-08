@@ -7,26 +7,19 @@ import org.w3c.dom.NodeList;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
-import javax.swing.filechooser.FileFilter;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.BufferedWriter;
+import java.awt.event.*;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 
 public class Main {
-
-    private static final String[] EXTENSIONS = {".pat", ".xls", ".opt", ".opg"};
 
     private static int timerSpeed = 500;
     private static String workCatalog;
@@ -50,17 +43,7 @@ public class Main {
         JFileChooser fileopen = new JFileChooser(workCatalog);
         fileopen.setSize(1700, 1600);
         
-        fileopen.setFileFilter(new FileFilter() {
-            @Override
-            public boolean accept(File f) {
-                return Stream.of(EXTENSIONS).anyMatch(e -> f.getName().toLowerCase().endsWith(e)) || f.isDirectory();
-            }
-
-            @Override
-            public String getDescription() {
-                return "*.pat, *.xls, *.opt, *.opg";
-            }
-        });
+        fileopen.setFileFilter(new PatFileFilter());
 
         int ret = fileopen.showDialog(null, "Open File");
         if (ret == JFileChooser.APPROVE_OPTION) {
@@ -70,12 +53,83 @@ public class Main {
         }
     }
 
+    private static JMenuBar createMenu(PatViewer patViewer, JComboBox<String> comboBox) {
+        JMenuBar menuBar = new JMenuBar();
+
+        JMenuItem openFile = new JMenuItem("Open file", KeyEvent.VK_O);
+        openFile.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
+        openFile.addActionListener(e -> {
+            File file12 = openFile();
+            if (file12 != null) {
+                try {
+                    patViewer.addFile(file12);
+                    comboBox.addItem(file12.getAbsolutePath());
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Failed to opne file: " + e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        JMenuItem saveFile = new JMenuItem("Save as...", KeyEvent.VK_S);
+        saveFile.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
+        saveFile.addActionListener(e -> {
+            JFileChooser fileopen = new JFileChooser(saveCatalog);
+            fileopen.addChoosableFileFilter(new PatFileFilter());
+            fileopen.setAcceptAllFileFilterUsed(false);
+            int ret = fileopen.showDialog(null, "Save File");
+            if (ret == JFileChooser.APPROVE_OPTION) {
+                File file1 = fileopen.getSelectedFile();
+
+                if (file1.getName().indexOf('.') < 0) {
+                    file1 = new File(file1.getPath() + ".opg");
+                }
+
+                try {
+                    PatWriter.save(file1, patViewer.getList().stream().flatMap(Collection::stream).collect(Collectors.toList()));
+                } catch (IOException e1) {
+                    JOptionPane.showMessageDialog(null, e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        JMenuItem clear = new JMenuItem("Close All");
+        clear.addActionListener(e -> {
+            if (patViewer.getLableFlag()) {
+                patViewer.lableFlag();
+            }
+            patViewer.clearList();
+            comboBox.removeAllItems();
+        });
+
+        JMenuItem print = new JMenuItem("Print", KeyEvent.VK_P);
+        print.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.CTRL_MASK));
+        print.addActionListener(e -> {
+            patViewer.setNameFile(Utils.extractFileName(comboBox.getItemAt(comboBox.getSelectedIndex())));
+            patViewer.printing();
+        });
+
+        JMenu fileMenu = new JMenu("File");
+        fileMenu.setMnemonic(KeyEvent.VK_F);
+        fileMenu.add(openFile);
+        fileMenu.add(saveFile);
+        fileMenu.add(print);
+        fileMenu.add(clear);
+
+        menuBar.add(fileMenu);
+
+        return menuBar;
+    }
+
     public static void main(String[] args) throws IOException, InterruptedException {
         JLabel label1 = new JLabel("");
         JLabel label2 = new JLabel("");
         JLabel label3 = new JLabel("");
         JLabel label4 = new JLabel("");
+
         patViewer = new PatViewer();
+        JComboBox<String> comboBox = new JComboBox<>();
+
         ReadXml();
 
         File file;
@@ -96,6 +150,9 @@ public class Main {
         }
 
         JFrame f = new JFrame();
+
+        f.setJMenuBar(createMenu(patViewer, comboBox));
+
         f.setTitle("Drawing Graphics in Frames");
         f.setExtendedState(JFrame.MAXIMIZED_BOTH);
         f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -110,8 +167,6 @@ public class Main {
         JPanel menuPanel = new JPanel();
         BoxLayout buttonPaneLayout = new BoxLayout(buttonPanel, BoxLayout.PAGE_AXIS);
         buttonPanel.setLayout(buttonPaneLayout);
-
-        JComboBox<String> comboBox = new JComboBox<>();
 
         comboBox.addActionListener(e -> {
             if (comboBox.getItemCount() > 0) {
@@ -141,30 +196,8 @@ public class Main {
             }
         });
 
-        JButton btnClear = new JButton("Очистить");
-        btnClear.addActionListener(e -> {
-            if (patViewer.getLableFlag()) {
-                patViewer.lableFlag();
-            }
-            patViewer.clearList();
-            comboBox.removeAllItems();
-        });
         buttonPanel.add(Box.createVerticalStrut(20));
-        JButton btnOpen = new JButton("Открыть и вывести новый файл");
-        btnOpen.addActionListener(e -> {
-            File file12 = openFile();
-            if (file12 != null) {
-                try {
-                    patViewer.addFile(file12);
-                    comboBox.addItem(file12.getAbsolutePath());
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                    JOptionPane.showMessageDialog(null, "Failed to opne file: " + e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        });
-        
-        menuPanel.add(btnOpen);
+
         JButton btnLable = new JButton("Название файла");
         btnLable.addActionListener(e -> {
             patViewer.setNameFile(Utils.extractFileName(comboBox.getItemAt(comboBox.getSelectedIndex())));
@@ -173,49 +206,7 @@ public class Main {
         });
 
         menuPanel.add(btnLable);
-        JButton btnPrint = new JButton("Напечатать на принтере");
-        btnPrint.addActionListener(e -> {
 
-/*
-            int x11=patViewer.getX();
-            int y11=patViewer.getY();
-            float factor11=patViewer.getFactor();
-
-            if (patViewer.getLableFlag()) {
-                patViewer.lableFlag();
-            }
-            patViewer.clearList();
-          //  comboBox.removeAllItems();
-            int scet=comboBox.getItemCount();
-
-            for (int i=0; i< scet; i++){
-                    List<PatRectangle> list1;
-                    try {
-                        String fileName = comboBox.getItemAt(i);
-                        if (fileName.endsWith(".xls")) {
-                            list1 = ExelParser.parser(fileName);
-                            patViewer.add(list1);
-                        } else {
-                            list1 = patParser.parser(fileName);
-                            patViewer.add(list1);
-                        }
-
-
-                    } catch (Exception e1) {
-                        JOptionPane.showMessageDialog(null, e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                    }
-
-            }
-            patViewer.setX(x11);
-            patViewer.setY(y11);
-            patViewer.setFactor(factor11);
-*/
-            patViewer.setNameFile(Utils.extractFileName(comboBox.getItemAt(comboBox.getSelectedIndex())));
-            patViewer.printing();
-
-        });
-
-        menuPanel.add(btnPrint);
         menuPanel.add(comboBox);
         JButton btnOptimKv = new JButton("Оптимизировать файл с блоками");
         btnOptimKv.addActionListener(e -> {
@@ -262,74 +253,10 @@ public class Main {
         });
 
         menuPanel.add(btnOptim);
-        JButton btn0 = new JButton("Сохранить");
-        btn0.addActionListener(e -> {
-            JFileChooser fileopen = new JFileChooser(saveCatalog);
-            int ret = fileopen.showDialog(null, "Save File");
-            if (ret == JFileChooser.APPROVE_OPTION) {
-                File file1 = fileopen.getSelectedFile();
-                try {
-                    String fileNameWrite = file1.getCanonicalPath();
-                    if (fileNameWrite.length() > 4) {
-                        if (fileNameWrite.charAt(fileNameWrite.length() - 4) != '.') {
-                            fileNameWrite = fileNameWrite + ".opg";
-                        }
-                    } else {
-                        fileNameWrite = fileNameWrite + ".opg";
-                    }
 
-                    BufferedWriter bw = new BufferedWriter(new FileWriter(fileNameWrite));
-                    PatRectangle rectangle = null;
-                    for (List<PatRectangle> i : patViewer.getList()) {
-                        for (PatRectangle j : i) {
-                            String s = "";
-                            if (rectangle != null) {
-                                if (rectangle.getX() != j.getX()) {
-                                    s = s + "X" + Integer.toString(j.getX());
-                                }
-                                if (rectangle.getY() != j.getY()) {
-                                    s = s + "Y" + Integer.toString(j.getY());
-                                }
-                                if (rectangle.getH() != j.getH()) {
-                                    s = s + "H" + Integer.toString(j.getH());
-                                }
-                                if (rectangle.getW() != j.getW()) {
-                                    s = s + "W" + Integer.toString(j.getW());
-                                }
-                                if (rectangle.getA() != j.getA()) {
-                                    s = s + "A" + Integer.toString(j.getA());
-                                }
-                                bw.write(s + ";");
-                            } else {
-                                bw.write("X" + Integer.toString(j.getX()) + "Y" + Integer.toString(j.getY()) + "H" + Integer.toString(j.getH()) + "W" + Integer.toString(j.getW()) + "A" + Integer.toString(j.getA()) + ";");
-                            }
-                            bw.newLine();
-                            rectangle = j;
-                        }
-                    }
-                    bw.write("$;");
-                    bw.close();
-                    btnClear.doClick();
-
-                    try {
-                        List<PatRectangle> list22 = PatParser.parser(new File(fileNameWrite));
-                        patViewer.add(list22);
-                        comboBox.addItem(fileNameWrite);
-                    } catch (Exception e1) {
-                        JOptionPane.showMessageDialog(null, e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                    }
-
-                } catch (IOException e1) {
-                    JOptionPane.showMessageDialog(null, e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        });
-
-        menuPanel.add(btn0);
         if (file != null) {
             comboBox.addItem(file.getAbsolutePath());
         }
-        menuPanel.add(btnClear);
         menuPanel.setLayout(new BoxLayout(menuPanel, BoxLayout.X_AXIS));
         buttonPanel.add(Box.createVerticalStrut(20));
         JPanel PanelPointer = new JPanel();
