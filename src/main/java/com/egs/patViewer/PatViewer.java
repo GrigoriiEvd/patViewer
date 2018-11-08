@@ -296,10 +296,8 @@ public class PatViewer extends JComponent {
                 color = 0;
             }
 
-            double mx[] = new double[4];
-            double my[] = new double[4];
-            int mx1[] = new int[4];
-            int my1[] = new int[4];
+            int mx[] = new int[4];
+            int my[] = new int[4];
 
             for (int k = 0; k < list1.size(); k++) {
                 if ((sizeOutput > k) || (!fOneOutput)) {
@@ -316,6 +314,21 @@ public class PatViewer extends JComponent {
                     my[0] = my[1] = i.getY() + (i.getH() / 2);
                     my[2] = my[3] = i.getY() - (i.getH() / 2);
 
+                    if (i.getA() != 0) {
+                        double radians = Math.toRadians(i.getA() / 10d);
+
+                        for (int j = 0; j < 4; j++) {
+                            int x1 = mx[j] - i.getX();
+                            int y1 = my[j] - i.getY();
+
+                            double x2 = (x1 * (Math.cos(radians))) - (y1 * (Math.sin(radians)));
+                            double y2 = (x1 * (Math.sin(radians))) + (y1 * (Math.cos(radians)));
+
+                            mx[j] = (int) ((i.getX() + x2));
+                            my[j] = (int) ((i.getY() + y2));
+                        }
+                    }
+
                     if (reverseX) {
                         for (int j = 0; j < 4; j++) {
                             mx[j] = maxX - mx[j];
@@ -328,46 +341,18 @@ public class PatViewer extends JComponent {
                         }
                     }
 
-                    if (i.getA() != 0) {
-                        double radians = Math.toRadians(i.getA() / 10d);
-                        double x1, y1, x2, y2;
-                        for (int j = 0; j < 4; j++) {
-                            if (reverseX) {
-                                x1 = mx[j] - (maxX - i.getX());
-                            } else {
-                                x1 = mx[j] - i.getX();
-                            }
-                            if (reverseY) {
-                                y1 = my[j] - (maxY - i.getY());
-                            } else {
-                                y1 = my[j] - i.getY();
-                            }
-                            x2 = (x1 * (Math.cos(radians))) - (y1 * (Math.sin(radians)));
-                            y2 = (x1 * (Math.sin(radians))) + (y1 * (Math.cos(radians)));
-                            if (reverseX) {
-                                mx1[j] = (int) (((maxX - i.getX()) + x2) * factor + x);
-                            } else {
-                                mx1[j] = (int) ((i.getX() + x2) * factor + x);
-                            }
-                            if (reverseY) {
-                                my1[j] = (int) (((maxY - i.getY()) + y2) * factor + y);
-                            } else {
-                                my1[j] = (int) ((i.getY() + y2) * factor + y);
-                            }
-                        }
-                    } else {
-                        for (int j = 0; j < 4; j++) {
-                            mx1[j] = (int) (mx[j] * factor + x);
-                            my1[j] = (int) (my[j] * factor + y);
-                        }
+                    for (int j = 0; j < 4; j++) {
+                        mx[j] = (int) (mx[j] * factor + x);
+                        my[j] = (int) (my[j] * factor + y);
                     }
+
                     if (endFlag) {
                         g.setColor(colors[color++]);
                     }
 
-                    g.drawPolygon(mx1, my1, 4);
+                    g.drawPolygon(mx, my, 4);
                     if (ffill) {
-                        g.fillPolygon(mx1, my1, 4);
+                        g.fillPolygon(mx, my, 4);
                     }
 
                     if (endFlag) {
