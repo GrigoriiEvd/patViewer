@@ -39,15 +39,19 @@ public class Main {
 
     private static PatRectangle predRect;
 
-    private static File openFile() {
-        JFileChooser fileopen = new JFileChooser(workCatalog);
-        fileopen.setSize(1700, 1600);
-        
-        fileopen.setFileFilter(new PatFileFilter());
+    private static JFileChooser openFileChooser;
+    private static JFileChooser saveFileChooser;
 
-        int ret = fileopen.showDialog(null, "Open File");
+    private static File openFile() {
+        if (openFileChooser == null) {
+            openFileChooser = new JFileChooser(workCatalog);
+            openFileChooser.setSize(1700, 1600);
+            openFileChooser.setFileFilter(new PatFileFilter());
+        }
+
+        int ret = openFileChooser.showDialog(null, "Open File");
         if (ret == JFileChooser.APPROVE_OPTION) {
-            return fileopen.getSelectedFile();
+            return openFileChooser.getSelectedFile();
         } else {
             return null;
         }
@@ -72,12 +76,14 @@ public class Main {
         JMenuItem saveFile = new JMenuItem("Save as...", KeyEvent.VK_S);
         saveFile.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
         saveFile.addActionListener(e -> {
-            JFileChooser fileopen = new JFileChooser(saveCatalog);
-            fileopen.addChoosableFileFilter(new PatFileFilter());
-            fileopen.setAcceptAllFileFilterUsed(false);
-            int ret = fileopen.showDialog(null, "Save File");
+            if (saveFileChooser == null) {
+                saveFileChooser = new JFileChooser(saveCatalog);
+                saveFileChooser.addChoosableFileFilter(new PatFileFilter());
+                saveFileChooser.setAcceptAllFileFilterUsed(false);
+            }
+            int ret = saveFileChooser.showDialog(null, "Save File");
             if (ret == JFileChooser.APPROVE_OPTION) {
-                File file1 = fileopen.getSelectedFile();
+                File file1 = saveFileChooser.getSelectedFile();
 
                 if (file1.getName().indexOf('.') < 0) {
                     file1 = new File(file1.getPath() + ".opg");
