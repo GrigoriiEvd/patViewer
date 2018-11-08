@@ -67,7 +67,7 @@ public class Main {
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         JLabel label1 = new JLabel("");
         JLabel label2 = new JLabel("");
         JLabel label3 = new JLabel("");
@@ -620,7 +620,11 @@ public class Main {
         panel.add(buttonPanel, BorderLayout.EAST);
         f.setContentPane(panel);
         f.setVisible(true);
-        timer1.start();
+
+        Thread.sleep(100);
+        SwingUtilities.invokeLater(() -> {
+            patViewer.optimumPosition();
+        });
     }
 
     static javax.swing.Timer timer = new javax.swing.Timer(timerSpeed, new ActionListener() {
@@ -630,13 +634,6 @@ public class Main {
             } else {
                 x.setValue((int) (100f * (patViewer.decSizeVisible() / patViewer.getOneOutSize())));
             }
-        }
-    });
-
-    static javax.swing.Timer timer1 = new javax.swing.Timer(timerSpeed, new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-            patViewer.optimumPosition();
-            timer1.stop();
         }
     });
 
