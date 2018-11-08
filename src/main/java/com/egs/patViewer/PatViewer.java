@@ -246,13 +246,6 @@ public class PatViewer extends JComponent {
                     mouseDrugStart.set(null);
                 }
             }
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                x = x - (int) ((e.getX() - x) * 0.1);
-                y = y - (int) ((e.getY() - y) * 0.1);
-                incF();
-            }
         });
     }
 
