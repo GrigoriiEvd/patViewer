@@ -80,6 +80,10 @@ public class PatViewer extends JComponent {
         repaint();
     }
 
+    public boolean isFfill() {
+        return ffill;
+    }
+
     public void setFfill(boolean ffill) {
         this.ffill = ffill;
         repaint();
@@ -107,6 +111,14 @@ public class PatViewer extends JComponent {
         sizeOutput++;
         repaint();
         return sizeOutput;
+    }
+
+    public boolean isReverseX() {
+        return reverseX;
+    }
+
+    public boolean isReverseY() {
+        return reverseY;
     }
 
     public void setReverseX(boolean reverseX) {

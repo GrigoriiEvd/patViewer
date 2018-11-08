@@ -54,8 +54,6 @@ public class Main {
     }
 
     private static JMenuBar createMenu(PatViewer patViewer, JComboBox<String> comboBox) {
-        JMenuBar menuBar = new JMenuBar();
-
         JMenuItem openFile = new JMenuItem("Open file", KeyEvent.VK_O);
         openFile.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
         openFile.addActionListener(e -> {
@@ -116,8 +114,30 @@ public class Main {
         fileMenu.add(print);
         fileMenu.add(clear);
 
-        menuBar.add(fileMenu);
+        JMenuItem invertX = new JCheckBoxMenuItem("Инвертировать по оси X");
+        invertX.setMnemonic(KeyEvent.VK_X);
+        invertX.setSelected(patViewer.isReverseX());
+        invertX.addChangeListener(e -> patViewer.setReverseX(invertX.isSelected()));
 
+        JMenuItem invertY = new JCheckBoxMenuItem("Инвертировать по оси Y");
+        invertY.setMnemonic(KeyEvent.VK_Y);
+        invertY.setSelected(patViewer.isReverseY());
+        invertY.addChangeListener(e -> patViewer.setReverseY(invertY.isSelected()));
+
+        JMenuItem fill = new JCheckBoxMenuItem("Fill rectangles");
+        fill.setMnemonic(KeyEvent.VK_F);
+        fill.setSelected(patViewer.isFfill());
+        fill.addChangeListener(e -> patViewer.setFfill(fill.isSelected()));
+
+        JMenu viewMenu = new JMenu("View");
+        viewMenu.setMnemonic(KeyEvent.VK_V);
+        viewMenu.add(invertX);
+        viewMenu.add(invertY);
+        viewMenu.add(fill);
+
+        JMenuBar menuBar = new JMenuBar();
+        menuBar.add(fileMenu);
+        menuBar.add(viewMenu);
         return menuBar;
     }
 
@@ -303,17 +323,6 @@ public class Main {
         PanelSize.add(btn6);
         buttonPanel.add(PanelSize);
         // buttonPanel.add(Box.createVerticalStrut(20));
-        JCheckBox checkBox1 = new JCheckBox("Инвертировать по оси X", true);
-        checkBox1.addItemListener(e -> patViewer.setReverseX(checkBox1.isSelected()));
-        buttonPanel.add(checkBox1);
-        buttonPanel.add(Box.createVerticalStrut(20));
-        JCheckBox checkBox2 = new JCheckBox("Инвертировать по оси Y", true);
-        checkBox2.addItemListener(e -> patViewer.setReverseY(checkBox2.isSelected()));
-        buttonPanel.add(checkBox2);
-        buttonPanel.add(Box.createVerticalStrut(20));
-        JCheckBox checkBox3 = new JCheckBox("Закраска", false);
-        checkBox3.addItemListener(e -> patViewer.setFfill(checkBox3.isSelected()));
-        buttonPanel.add(checkBox3);
         buttonPanel.add(Box.createVerticalStrut(20));
         JButton btnTmer = new JButton("Выводить по одному");
         btnTmer.setToolTipText("Вывод изображения последовательно по одному прямоугольнику, с регулируемой скоростью");
