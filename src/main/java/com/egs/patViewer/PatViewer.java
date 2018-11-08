@@ -336,10 +336,9 @@ public class PatViewer extends JComponent {
                     }
 
                     if (i.getA() != 0) {
-                        double radians;
+                        double radians = Math.toRadians(i.getA() / 10d);
                         double x1, y1, x2, y2;
                         for (int j = 0; j < 4; j++) {
-                            radians = Math.toRadians(i.getA() / 10);
                             if (reverseX) {
                                 x1 = mx[j] - (maxX - i.getX());
                             } else {
