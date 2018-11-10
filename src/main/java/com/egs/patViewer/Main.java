@@ -135,11 +135,47 @@ public class Main {
         fill.setSelected(patViewer.isFfill());
         fill.addChangeListener(e -> patViewer.setFfill(fill.isSelected()));
 
+        JMenuItem up = new JMenuItem("Up ▲");
+        up.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0));
+        up.addActionListener(e -> patViewer.incY());
+        JMenuItem down = new JMenuItem("Down ▼");
+        down.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0));
+        down.addActionListener(e -> patViewer.decY());
+        JMenuItem right = new JMenuItem("Right ►");
+        right.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0));
+        right.addActionListener(e -> patViewer.decX());
+        JMenuItem left = new JMenuItem("Left ◄");
+        left.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0));
+        left.addActionListener(e -> patViewer.incX());
+
+        JMenuItem center = new JMenuItem("Optimal zoom and position");
+        center.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_0, ActionEvent.CTRL_MASK));
+        center.addActionListener(e -> patViewer.optimumPosition());
+        JMenuItem zoomIn = new JMenuItem("Zoom in");
+        zoomIn.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_ADD, 0));
+        zoomIn.addActionListener(e -> patViewer.incCenter());
+        JMenuItem zoomOut = new JMenuItem("Zoom out");
+        zoomOut.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_SUBTRACT, 0));
+        zoomOut.addActionListener(e -> patViewer.decCenter());
+
         JMenu viewMenu = new JMenu("View");
         viewMenu.setMnemonic(KeyEvent.VK_V);
         viewMenu.add(invertX);
         viewMenu.add(invertY);
         viewMenu.add(fill);
+        
+        viewMenu.addSeparator();
+        
+        viewMenu.add(up);
+        viewMenu.add(down);
+        viewMenu.add(right);
+        viewMenu.add(left);
+
+        viewMenu.addSeparator();
+
+        viewMenu.add(center);
+        viewMenu.add(zoomIn);
+        viewMenu.add(zoomOut);
 
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(fileMenu);
@@ -285,49 +321,9 @@ public class Main {
         }
         menuPanel.setLayout(new BoxLayout(menuPanel, BoxLayout.X_AXIS));
         buttonPanel.add(Box.createVerticalStrut(20));
-        JPanel PanelPointer = new JPanel();
-        JPanel PanelPointer1 = new JPanel();
-        JButton btn1 = new JButton("◄");
-        btn1.setToolTipText("Переместить изображение влево");
-        btn1.addActionListener(e -> patViewer.incX());
-        PanelPointer.add(btn1);
-        //   buttonPanel.add(Box.createVerticalStrut(20));
-        JButton btn4 = new JButton("►");
-        btn4.setToolTipText("Переместить изображение вправо");
-        btn4.addActionListener(e -> patViewer.decX());
-        PanelPointer.add(btn4);
-        // buttonPanel.add(Box.createVerticalStrut(20));
-        JButton btn2 = new JButton("▲");
-        btn2.setToolTipText("Переместить изображение вверх");
-        btn2.addActionListener(e -> patViewer.incY());
-        PanelPointer1.add(btn2);
-        //  buttonPanel.add(Box.createVerticalStrut(20));
-        JButton btn3 = new JButton("▼");
-        btn3.setToolTipText("Переместить изображение вниз");
-        btn3.addActionListener(e -> patViewer.decY());
-        PanelPointer1.add(btn3);
-        //  buttonPanel.add(Box.createVerticalStrut(20));
         buttonPanel.add(btnOptimKv);
         //    buttonPanel.add(btnPovorot);
         buttonPanel.add(Box.createVerticalStrut(20));
-        buttonPanel.add(PanelPointer);
-        buttonPanel.add(PanelPointer1);
-        JPanel PanelSize = new JPanel();
-        JButton btn5 = new JButton("+");
-        btn5.setToolTipText("Приблизить изображение");
-        btn5.addActionListener(e -> patViewer.incCenter());
-        PanelSize.add(btn5);
-        //   buttonPanel.add(Box.createVerticalStrut(20));
-        JButton btnOpt = new JButton("⌂");
-        btnOpt.setToolTipText("Установить оптимальную позицию чертежа");
-        btnOpt.addActionListener(e -> patViewer.optimumPosition());
-        PanelSize.add(btnOpt);
-        //  buttonPanel.add(Box.createVerticalStrut(20));
-        JButton btn6 = new JButton("-");
-        btn6.setToolTipText("Отдалить изображение");
-        btn6.addActionListener(e -> patViewer.decCenter());
-        PanelSize.add(btn6);
-        buttonPanel.add(PanelSize);
         // buttonPanel.add(Box.createVerticalStrut(20));
         buttonPanel.add(Box.createVerticalStrut(20));
         JButton btnTmer = new JButton("Выводить по одному");
