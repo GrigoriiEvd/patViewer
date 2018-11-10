@@ -59,7 +59,7 @@ public class Main {
 
     private static JMenuBar createMenu(PatViewer patViewer, JComboBox<String> comboBox) {
         JMenuItem openFile = new JMenuItem("Open file", KeyEvent.VK_O);
-        openFile.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
+        openFile.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK));
         openFile.addActionListener(e -> {
             File file12 = openFile();
             if (file12 != null) {
@@ -74,7 +74,7 @@ public class Main {
         });
 
         JMenuItem saveFile = new JMenuItem("Save as...", KeyEvent.VK_S);
-        saveFile.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
+        saveFile.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK));
         saveFile.addActionListener(e -> {
             if (saveFileChooser == null) {
                 saveFileChooser = new JFileChooser(saveCatalog);
@@ -107,7 +107,7 @@ public class Main {
         });
 
         JMenuItem print = new JMenuItem("Print", KeyEvent.VK_P);
-        print.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.CTRL_MASK));
+        print.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.CTRL_MASK));
         print.addActionListener(e -> {
             patViewer.setNameFile(Utils.extractFileName(comboBox.getItemAt(comboBox.getSelectedIndex())));
             patViewer.printing();
@@ -135,6 +135,15 @@ public class Main {
         fill.setSelected(patViewer.isFfill());
         fill.addChangeListener(e -> patViewer.setFfill(fill.isSelected()));
 
+        JMenuItem fileName = new JCheckBoxMenuItem("Show file name");
+        fileName.setMnemonic(KeyEvent.VK_N);
+        fileName.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_MASK));
+        fileName.setSelected(patViewer.isFfill());
+        fileName.addChangeListener(e -> {
+            patViewer.setNameFile(Utils.extractFileName(comboBox.getItemAt(comboBox.getSelectedIndex())));
+            patViewer.lableFlag();
+        });
+
         JMenuItem up = new JMenuItem("Up ▲");
         up.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0));
         up.addActionListener(e -> patViewer.incY());
@@ -149,7 +158,7 @@ public class Main {
         left.addActionListener(e -> patViewer.incX());
 
         JMenuItem center = new JMenuItem("Optimal zoom and position");
-        center.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_0, ActionEvent.CTRL_MASK));
+        center.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_0, InputEvent.CTRL_MASK));
         center.addActionListener(e -> patViewer.optimumPosition());
         JMenuItem zoomIn = new JMenuItem("Zoom in");
         zoomIn.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_ADD, 0));
@@ -165,7 +174,9 @@ public class Main {
         viewMenu.add(fill);
         
         viewMenu.addSeparator();
-        
+        viewMenu.add(fileName);
+        viewMenu.addSeparator();
+
         viewMenu.add(up);
         viewMenu.add(down);
         viewMenu.add(right);
@@ -259,15 +270,6 @@ public class Main {
         });
 
         buttonPanel.add(Box.createVerticalStrut(20));
-
-        JButton btnLable = new JButton("Название файла");
-        btnLable.addActionListener(e -> {
-            patViewer.setNameFile(Utils.extractFileName(comboBox.getItemAt(comboBox.getSelectedIndex())));
-
-            patViewer.lableFlag();
-        });
-
-        menuPanel.add(btnLable);
 
         menuPanel.add(comboBox);
         JButton btnOptimKv = new JButton("Оптимизировать файл с блоками");
