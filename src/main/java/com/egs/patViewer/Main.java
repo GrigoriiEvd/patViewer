@@ -1,19 +1,11 @@
 package com.egs.patViewer;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
@@ -22,9 +14,7 @@ import java.util.stream.Collectors;
 
 public class Main {
 
-    private static int timerSpeed = 500;
-    private static String workCatalog;
-    private static String saveCatalog;
+    private static int timerSpeed;
 
     private static PatViewer patViewer;
     private static JComboBox<String> comboBox;
@@ -36,19 +26,15 @@ public class Main {
 
     private static JProgressBar x;
     private static boolean fpor = true;
-    private static int ExelA = 10000;
-    private static int ExelHW = 100;
-    private static int ExelXY = 1;
-    private static int FontSize = 25;
-    private static int FontX = 1000;
-    private static int FontY = 100;
+
+    private static Configuration cfg;
 
     private static JFileChooser openFileChooser;
     private static JFileChooser saveFileChooser;
 
     private static File openFile() {
         if (openFileChooser == null) {
-            openFileChooser = new JFileChooser(workCatalog);
+            openFileChooser = new JFileChooser(cfg.getWorkCatalog());
             openFileChooser.setSize(1700, 1600);
             openFileChooser.setFileFilter(new PatFileFilter());
         }
@@ -81,7 +67,7 @@ public class Main {
         saveFile.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK));
         saveFile.addActionListener(e -> {
             if (saveFileChooser == null) {
-                saveFileChooser = new JFileChooser(saveCatalog);
+                saveFileChooser = new JFileChooser(cfg.getSaveCatalog());
                 saveFileChooser.addChoosableFileFilter(new PatFileFilter());
                 saveFileChooser.setAcceptAllFileFilterUsed(false);
             }
@@ -197,11 +183,11 @@ public class Main {
 
         JMenuItem optimize = new JMenuItem("Оптимизировать файл");
         optimize.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, InputEvent.CTRL_MASK));
-        optimize.addActionListener(e -> optimize(comboBox.getSelectedIndex(), Main::OptimumPat));
+        optimize.addActionListener(e -> optimize(comboBox.getSelectedIndex(), new Optimization(cfg)));
 
         JMenuItem optimizeBlocks = new JMenuItem("Оптимизировать файл с блоками");
         optimizeBlocks.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, InputEvent.CTRL_MASK + InputEvent.ALT_MASK));
-        optimizeBlocks.addActionListener(e -> optimize(comboBox.getSelectedIndex(), Main::OptimumPat1));
+        optimizeBlocks.addActionListener(e -> optimize(comboBox.getSelectedIndex(), new OptimizationBlocks(cfg)));
 
         optimization.add(optimize);
         optimization.add(optimizeBlocks);
@@ -214,10 +200,19 @@ public class Main {
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        patViewer = new PatViewer();
-        comboBox = new JComboBox<>();
+        cfg = Configuration.read();
 
-        ReadXml();
+        timerSpeed = cfg.getTimerSpeed();
+        patViewer = new PatViewer();
+        patViewer.setSaveImag(cfg.getSaveImag());
+        patViewer.setFontSize(cfg.getFontSize());
+        patViewer.setFontX(cfg.getFontX());
+        patViewer.setFontY(cfg.getFontY());
+        patViewer.setPrinter(cfg.getPrinter());
+        patViewer.setWriteName(cfg.isWriteName());
+        patViewer.setWriteData(cfg.isWriteData());
+
+        comboBox = new JComboBox<>();
 
         File file;
 
@@ -464,172 +459,4 @@ public class Main {
         return timerSpeed;
     }
 
-    public static List<PatRectangle> OptimumPat1(List<PatRectangle> l) {
-        ArrayList<PatRectangle> l1 = new ArrayList<>();
-        PatRectangle min = l.get(0);
-        for (PatRectangle i : l) {
-            if (min.getA() > i.getA()) {
-                min = i;
-            } else {
-                if (((min.getH() + min.getW()) * 100 + min.getX() + min.getY()) > ((i.getH() + i.getW()) * 100 + i.getX() + i.getY())) {
-                    min = i;
-                }
-            }
-        }
-        l1.add(min);
-        l.remove(min);
-        int k = l.size();
-        for (int j = 0; j < k; j++) {
-            double minx = lengthPat(l1.get(l1.size() - 1), l.get(0));
-            PatRectangle k2 = l.get(0);
-            PatRectangle k3 = l.get(0);
-            boolean flpovt = true;
-            boolean fpr = false;
-            if (l1.size() > 1) {
-                if ((l1.get(l1.size() - 1).getH() == l1.get(l1.size() - 2).getH()) || (l1.get(l1.size() - 1).getA() == l1.get(l1.size() - 2).getA())) {
-                    if (((l1.get(l1.size() - 1).getX() == l1.get(l1.size() - 2).getX()) && (l1.get(l1.size() - 1).getY() != l1.get(l1.size() - 2).getY())) || ((l1.get(l1.size() - 1).getX() != l1.get(l1.size() - 2).getX()) && (l1.get(l1.size() - 1).getY() == l1.get(l1.size() - 2).getY()))) {
-                        fpr = true;
-                    }
-                }
-                if (fpr) {
-                    for (PatRectangle i : l) {
-                        if (minx > lengthPat(l1.get(l1.size() - 1), i)) {
-                            minx = lengthPat(l1.get(l1.size() - 1), i);
-                            k2 = i;
-                        }
-                        if ((l1.get(l1.size() - 2).getX() - l1.get(l1.size() - 1).getX() ==
-                                l1.get(l1.size() - 1).getX() - i.getX()) &&
-                                (l1.get(l1.size() - 2).getY() - l1.get(l1.size() - 1).getY() ==
-                                        l1.get(l1.size() - 1).getY() - i.getY())) {
-                            k3 = i;
-                            flpovt = false;
-                        }
-                    }
-                } else {
-                    for (PatRectangle i : l) {
-                        if (minx > lengthPat(l1.get(l1.size() - 1), i)) {
-                            minx = lengthPat(l1.get(l1.size() - 1), i);
-                            k2 = i;
-                        }
-                    }
-                }
-                if (flpovt) {
-                    l1.add(k2);
-                    l.remove(k2);
-                } else {
-                    if (lengthPat(l1.get(l1.size() - 1), k3) <= lengthPat(l1.get(l1.size() - 1), k2) * 1.1) {
-                        l1.add(k3);
-                        l.remove(k3);
-                    } else {
-                        l1.add(k2);
-                        l.remove(k2);
-                    }
-                }
-            } else {
-                for (PatRectangle i : l) {
-                    if (minx > lengthPat(l1.get(l1.size() - 1), i)) {
-                        minx = lengthPat(l1.get(l1.size() - 1), i);
-                        k2 = i;
-                    }
-                }
-                l1.add(k2);
-                l.remove(k2);
-            }
-        }
-        return l1;
-    }
-
-    public static List<PatRectangle> OptimumPat(List<PatRectangle> l) {
-        ArrayList<PatRectangle> l1 = new ArrayList<>();
-        PatRectangle min = l.get(0);
-        for (PatRectangle i : l) {
-            if (min.getA() > i.getA()) {
-                min = i;
-            } else {
-                if (((min.getH() + min.getW()) * 100 + min.getX() + min.getY()) > ((i.getH() + i.getW()) * 100 + i.getX() + i.getY())) {
-                    min = i;
-                }
-            }
-        }
-        l1.add(min);
-        l.remove(min);
-        int k = l.size();
-        for (int j = 0; j < k; j++) {
-            double minx = lengthPat(l1.get(l1.size() - 1), l.get(0));
-            PatRectangle k2 = l.get(0);
-            for (PatRectangle i : l) {
-                if (minx > lengthPat(l1.get(l1.size() - 1), i)) {
-                    minx = lengthPat(l1.get(l1.size() - 1), i);
-                    k2 = i;
-                }
-            }
-            l1.add(k2);
-            l.remove(k2);
-        }
-        return l1;
-    }
-
-    public static double lengthPat(PatRectangle x1, PatRectangle y1) {
-        return ((ExelA * Math.abs(x1.getA() - y1.getA())) + (ExelHW * (Math.abs(x1.getW() - y1.getW()) + Math.abs(x1.getH() - y1.getH()))) + (ExelXY * (Math.abs(x1.getX() - y1.getX()) + Math.abs(x1.getY() - y1.getY()))));
-    }
-
-    public static void ReadXml() {
-        try {
-            File fXml = new File("config.xml");
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            DocumentBuilder db = dbf.newDocumentBuilder();
-            Document doc = db.parse(fXml);
-
-            doc.getDocumentElement().normalize();
-
-            NodeList nodeLst = doc.getElementsByTagName("point");
-            Node fstNode = nodeLst.item(0);
-            if (fstNode.getNodeType() == Node.ELEMENT_NODE) {
-                String scoo;
-                Element elj = (Element) fstNode;
-                scoo = elj.getAttribute("A");
-                ExelA = Integer.parseInt(scoo);
-                scoo = elj.getAttribute("HW");
-                ExelHW = Integer.parseInt(scoo);
-                scoo = elj.getAttribute("XY");
-                ExelXY = Integer.parseInt(scoo);
-                patViewer.setSaveImag(elj.getAttribute("SaveImage"));
-                try {
-                    timerSpeed = Integer.parseInt(elj.getAttribute("SpeedPrint"));
-                } catch (Exception e2) {
-                    timerSpeed = 250;
-                }
-                try {
-                    workCatalog = elj.getAttribute("WorkCatalog");
-                } catch (Exception e2) {
-                    workCatalog = System.getProperty("user.dir");
-                }
-                try {
-                    saveCatalog = elj.getAttribute("SaveCatalog");
-                } catch (Exception e2) {
-                    saveCatalog = System.getProperty("user.dir");
-                }
-                scoo = elj.getAttribute("FontSize");
-                FontSize = Integer.parseInt(scoo);
-                scoo = elj.getAttribute("FontX");
-                FontX = Integer.parseInt(scoo);
-                scoo = elj.getAttribute("FontY");
-                FontY = Integer.parseInt(scoo);
-                patViewer.setFontSize(FontSize);
-                patViewer.setFontX(FontX);
-                patViewer.setFontY(FontY);
-                patViewer.setPrinter(elj.getAttribute("Printer"));
-                scoo = elj.getAttribute("WriteName");
-                if (scoo.equals("+")) {
-                    patViewer.setWriteName(true);
-                }
-                scoo = elj.getAttribute("WriteData");
-                if (scoo.equals("+")) {
-                    patViewer.setWriteData(true);
-                }
-            }
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Ошибка при открытии Xml файла с настройками, применены стандартные");
-        }
-    }
 }
