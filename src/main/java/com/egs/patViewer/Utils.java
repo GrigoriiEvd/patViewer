@@ -13,4 +13,17 @@ public class Utils {
         return path.substring(idx + 1);
     }
 
+    public static boolean insidePolygon(double[] vertx, double[] verty, double x, double y) {
+        assert vertx.length == verty.length;
+
+        boolean c = false;
+        for (int i = 0, j = vertx.length - 1; i < vertx.length; j = i++) {
+            if (((verty[i] > y) != (verty[j] > y)) &&
+                    (x < (vertx[j] - vertx[i]) * (y - verty[i]) / (verty[j] - verty[i]) + vertx[i])) {
+                c = !c;
+            }
+        }
+
+        return c;
+    }
 }

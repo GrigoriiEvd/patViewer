@@ -33,4 +33,35 @@ public class PatRectangle {
     public int getA() {
         return a;
     }
+
+    public boolean isInside(int x, int y) {
+        double mx[] = new double[4];
+        double my[] = new double[4];
+
+        mx[0] = mx[3] = - w / 2d;
+        mx[1] = mx[2] = w / 2d;
+
+        my[0] = my[1] = h / 2d;
+        my[2] = my[3] = - h / 2d;
+
+        if (a != 0) {
+            double radians = Math.toRadians(a / 10d);
+
+            for (int j = 0; j < 4; j++) {
+                double x1 = mx[j];
+                double y1 = my[j];
+
+                mx[j] = ((x1 * (Math.cos(radians))) - (y1 * (Math.sin(radians))));
+                my[j] = ((x1 * (Math.sin(radians))) + (y1 * (Math.cos(radians))));
+            }
+        }
+
+        for (int j = 0; j < 4; j++) {
+            mx[j] += this.x;
+            my[j] += this.y;
+        }
+
+        return Utils.insidePolygon(mx, my, x, y);
+    }
+
 }

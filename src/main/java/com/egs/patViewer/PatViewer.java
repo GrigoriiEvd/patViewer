@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 /**
  * Created by EGS on 03.10.2015.
@@ -25,6 +26,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 
 public class PatViewer extends JComponent {
+
+    private static final Color SELECTED_COLOR = Color.red;
 
     private List<List<PatRectangle>> list = new ArrayList<>();
     private float factor = 1f / 500;
@@ -53,6 +56,14 @@ public class PatViewer extends JComponent {
 
     private boolean showNonVisible = true;
     private Color nonVisibleColor = new Color(0xE4E4E4);
+
+    private PatRectangle selected;
+
+    private final List<Consumer<PatRectangle>> selectionListeners = new ArrayList<>();
+
+    public void addSelectionListener(Consumer<PatRectangle> listener) {
+        selectionListeners.add(listener);
+    }
 
     public int getListSize() {
         return list.size();
@@ -250,6 +261,16 @@ public class PatViewer extends JComponent {
         
         addMouseListener(new MouseAdapter() {
             @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 1) {
+                    Point point = toPatCoordinate(e.getPoint());
+
+                    PatRectangle rect = findRect(point.x, point.y);
+                    selectRectangle(rect);
+                }
+            }
+
+            @Override
             public void mousePressed(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 1) {
                     mouseDrugStart.set(e.getPoint());
@@ -263,6 +284,42 @@ public class PatViewer extends JComponent {
                 }
             }
         });
+    }
+
+    private void selectRectangle(PatRectangle rect) {
+        if (rect != selected) {
+            selected = rect;
+
+            Consumer<PatRectangle>[] consumers = selectionListeners.toArray(new Consumer[selectionListeners.size()]);
+            for (Consumer<PatRectangle> consumer : consumers) {
+                consumer.accept(rect);
+            }
+
+            repaint();
+        }
+    }
+
+    private Point toPatCoordinate(Point view) {
+        int x = (int) ((view.x - PatViewer.this.x) / factor);
+        int y = (int) ((view.y - PatViewer.this.y) / factor);
+
+        if (reverseX)
+            x = maxX - x;
+        if (reverseY)
+            y = maxY - y;
+
+        return new Point(x, y);
+    }
+
+    private PatRectangle findRect(int x, int y) {
+        for (List<PatRectangle> l : list) {
+            for (PatRectangle rect : l) {
+                if (rect.isInside(x, y))
+                    return rect;
+            }
+        }
+
+        return null;
     }
 
     public BufferedImage paintToImage() {
@@ -295,28 +352,28 @@ public class PatViewer extends JComponent {
     }
 
     private void paintRect(Graphics g, PatRectangle i, int mx[], int my[]) {
-        mx[0] = mx[3] = i.getX() - (i.getW() / 2);
-        mx[1] = mx[2] = i.getX() + (i.getW() / 2);
+        mx[0] = mx[3] = - i.getW() / 2;
+        mx[1] = mx[2] = i.getW() / 2;
 
-        my[0] = my[1] = i.getY() + (i.getH() / 2);
-        my[2] = my[3] = i.getY() - (i.getH() / 2);
+        my[0] = my[1] = i.getH() / 2;
+        my[2] = my[3] = - i.getH() / 2;
 
         if (i.getA() != 0) {
             double radians = Math.toRadians(i.getA() / 10d);
 
             for (int j = 0; j < 4; j++) {
-                int x1 = mx[j] - i.getX();
-                int y1 = my[j] - i.getY();
+                int x1 = mx[j];
+                int y1 = my[j];
 
-                double x2 = (x1 * (Math.cos(radians))) - (y1 * (Math.sin(radians)));
-                double y2 = (x1 * (Math.sin(radians))) + (y1 * (Math.cos(radians)));
-
-                mx[j] = (int) ((i.getX() + x2));
-                my[j] = (int) ((i.getY() + y2));
+                mx[j] = (int) ((x1 * (Math.cos(radians))) - (y1 * (Math.sin(radians))));
+                my[j] = (int) ((x1 * (Math.sin(radians))) + (y1 * (Math.cos(radians))));
             }
         }
 
         for (int j = 0; j < 4; j++) {
+            mx[j] += i.getX();
+            my[j] += i.getY();
+
             if (reverseX)
                 mx[j] = maxX - mx[j];
 
@@ -350,7 +407,9 @@ public class PatViewer extends JComponent {
                 g.setColor(nonVisibleColor);
                 for (List<PatRectangle> list1 : list) {
                     for (int k = sizeOutput; k < list1.size(); k++) {
-                        paintRect(g, list1.get(k), mx, my);
+                        PatRectangle rect = list1.get(k);
+                        if (rect != selected)
+                            paintRect(g, rect, mx, my);
                     }
                 }
             }
@@ -366,7 +425,9 @@ public class PatViewer extends JComponent {
                         g.setColor(Color.red);
                     }
 
-                    paintRect(g, list1.get(k), mx, my);
+                    PatRectangle rect = list1.get(k);
+                    if (rect != selected)
+                        paintRect(g, rect, mx, my);
                 }
             }
         }
@@ -377,11 +438,16 @@ public class PatViewer extends JComponent {
                     color = 0;
 
                 for (PatRectangle rect : list1) {
-                    paintRect(g, rect, mx, my);
+                    if (rect != selected)
+                        paintRect(g, rect, mx, my);
                 }
             }
         }
 
+        if (selected != null) {
+            g.setColor(SELECTED_COLOR);
+            paintRect(g, selected, mx, my);
+        }
     }
 
     public void clearList() {

@@ -20,6 +20,7 @@ public class Main {
     private static JComboBox<String> comboBox;
 
     private static JLabel statLabel = new JLabel("");
+    private static JLabel selectedLabel = new JLabel("");
 
     private static JProgressBar progress;
     private static boolean fpor = true;
@@ -291,8 +292,7 @@ public class Main {
         });
         JLabel label = new JLabel("Скорость " + Double.toString(1000d / timerSpeed) + " в секунду");
         //  JLabel label = new JLabel("");
-        JPanel PanelPlay = new JPanel();
-        JPanel PanelPlay1 = new JPanel();
+
         JButton btnFast = new JButton(">>");
         btnFast.setToolTipText("Ускорить вывод элементов");
         btnFast.addActionListener(e -> {
@@ -317,8 +317,11 @@ public class Main {
             label.setText("Скорость " + s + " в секунду");
         });
 
-        PanelPlay.add(btnslow);
-        PanelPlay.add(btnFast);
+        JPanel panelPlay = new JPanel();
+        panelPlay.add(btnslow);
+        panelPlay.add(btnFast);
+        panelPlay.setMaximumSize(new Dimension(1000, panelPlay.getPreferredSize().height));
+
         //   buttonPanel.add(Box.createVerticalStrut(20));
         JButton btnStop = new JButton("Остановить вывод");
         btnStop.setToolTipText("Остановить вывод элементов");
@@ -335,7 +338,6 @@ public class Main {
             }
         });
 
-        PanelPlay1.add(btnStop);
         //   buttonPanel.add(Box.createVerticalStrut(20));
         JButton btnNaz = new JButton("Ɔ/с");
         btnNaz.setToolTipText("Вывод элементов задом наперед");
@@ -352,7 +354,10 @@ public class Main {
             }
         });
 
-        PanelPlay1.add(btnNaz);
+        JPanel panelPlay1 = new JPanel();
+        panelPlay1.add(btnStop);
+        panelPlay1.add(btnNaz);
+        panelPlay1.setMaximumSize(new Dimension(1000, panelPlay1.getPreferredSize().height));
         // buttonPanel.add(Box.createVerticalStrut(20));
 
 
@@ -370,8 +375,31 @@ public class Main {
 
 
         buttonPanel.add(label);
-        buttonPanel.add(PanelPlay);
-        buttonPanel.add(PanelPlay1);
+        buttonPanel.add(Box.createVerticalStrut(20));
+        buttonPanel.add(panelPlay);
+        buttonPanel.add(Box.createVerticalStrut(20));
+        buttonPanel.add(panelPlay1);
+        buttonPanel.add(Box.createVerticalStrut(20));
+
+        patViewer.addSelectionListener(rect -> {
+            if (rect == null) {
+                selectedLabel.setText("");
+            }
+            else {
+                String text = String.format("<html><body><pre>" +
+                        "X: %6d<br>" +
+                        "Y: %6d<br>" +
+                        "W: %6d<br>" +
+                        "H: %6d<br>" +
+                        "A: %d<br>" +
+                        "</pre></body></html>", rect.getX(), rect.getY(), rect.getW(), rect.getH(), rect.getA());
+
+                selectedLabel.setText(text);
+            }
+        });
+
+        buttonPanel.add(Box.createVerticalGlue());
+        buttonPanel.add(selectedLabel);
         buttonPanel.add(Box.createVerticalStrut(20));
         buttonPanel.add(statLabel);
 
