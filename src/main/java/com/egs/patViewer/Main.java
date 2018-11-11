@@ -19,12 +19,9 @@ public class Main {
     private static PatViewer patViewer;
     private static JComboBox<String> comboBox;
 
-    private static JLabel label1 = new JLabel("");
-    private static JLabel label2 = new JLabel("");
-    private static JLabel label3 = new JLabel("");
-    private static JLabel label4 = new JLabel("");
+    private static JLabel statLabel = new JLabel("");
 
-    private static JProgressBar x;
+    private static JProgressBar progress;
     private static boolean fpor = true;
 
     private static Configuration cfg;
@@ -245,16 +242,11 @@ public class Main {
 
         panel.add(viewerPanel, BorderLayout.CENTER);
 
-        JPanel buttonPanel = new JPanel();
         JPanel menuPanel = new JPanel();
-        BoxLayout buttonPaneLayout = new BoxLayout(buttonPanel, BoxLayout.PAGE_AXIS);
-        buttonPanel.setLayout(buttonPaneLayout);
 
         comboBox.addActionListener(e -> {
             refreshStat();
         });
-
-        buttonPanel.add(Box.createVerticalStrut(20));
 
         menuPanel.add(comboBox);
 
@@ -262,12 +254,9 @@ public class Main {
             comboBox.addItem(file.getAbsolutePath());
         }
         menuPanel.setLayout(new BoxLayout(menuPanel, BoxLayout.X_AXIS));
-        buttonPanel.add(Box.createVerticalStrut(20));
 
         //    buttonPanel.add(btnPovorot);
-        buttonPanel.add(Box.createVerticalStrut(20));
         // buttonPanel.add(Box.createVerticalStrut(20));
-        buttonPanel.add(Box.createVerticalStrut(20));
         JButton btnTmer = new JButton("Выводить по одному");
         btnTmer.setToolTipText("Вывод изображения последовательно по одному прямоугольнику, с регулируемой скоростью");
         btnTmer.addActionListener(e -> {
@@ -277,7 +266,7 @@ public class Main {
                     fpor = true;
                     timer.start();
                 } else {
-                    x.setValue(100);
+                    progress.setValue(100);
                 }
             } else {
                 btnTmer.setText("Выводить по одному");
@@ -286,16 +275,12 @@ public class Main {
             patViewer.oppositefOutput();
         });
 
-        buttonPanel.add(btnTmer);
-        buttonPanel.add(Box.createVerticalStrut(20));
-        x = new JProgressBar(0);
-        x.addMouseListener(new MouseAdapter() {
+        progress = new JProgressBar(0);
+        progress.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
-                patViewer.setSizePercent((double) e.getX() / x.getWidth());
+                patViewer.setSizePercent((double) e.getX() / progress.getWidth());
             }
         });
-        buttonPanel.add(x);
-        buttonPanel.add(Box.createVerticalStrut(20));
         JLabel label = new JLabel("Скорость " + Double.toString(1000d / timerSpeed) + " в секунду");
         //  JLabel label = new JLabel("");
         JPanel PanelPlay = new JPanel();
@@ -361,17 +346,29 @@ public class Main {
 
         PanelPlay1.add(btnNaz);
         // buttonPanel.add(Box.createVerticalStrut(20));
+
+
+        JPanel buttonPanel = new JPanel();
+
+        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.PAGE_AXIS));
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(20, 3, 20, 10));
+
+        buttonPanel.add(btnTmer);
+        buttonPanel.add(Box.createVerticalStrut(20));
+
+        buttonPanel.add(progress);
+
+        buttonPanel.add(Box.createVerticalStrut(20));
+
+
         buttonPanel.add(label);
         buttonPanel.add(PanelPlay);
         buttonPanel.add(PanelPlay1);
+        buttonPanel.add(Box.createVerticalStrut(20));
+        buttonPanel.add(statLabel);
 
         refreshStat();
 
-        buttonPanel.add(label1);
-        buttonPanel.add(label2);
-        buttonPanel.add(label3);
-        buttonPanel.add(label4);
-        //buttonPanel.add(label);
         panel.add(menuPanel, BorderLayout.NORTH);
         panel.add(buttonPanel, BorderLayout.EAST);
         f.setContentPane(panel);
@@ -384,40 +381,45 @@ public class Main {
     static javax.swing.Timer timer = new javax.swing.Timer(timerSpeed, new ActionListener() {
         public void actionPerformed(ActionEvent e) {
             if (fpor) {
-                x.setValue((int) (100f * (patViewer.incSizeVisible() / patViewer.getOneOutSize())));
+                progress.setValue((int) (100f * (patViewer.incSizeVisible() / patViewer.getOneOutSize())));
             } else {
-                x.setValue((int) (100f * (patViewer.decSizeVisible() / patViewer.getOneOutSize())));
+                progress.setValue((int) (100f * (patViewer.decSizeVisible() / patViewer.getOneOutSize())));
             }
         }
     });
 
     private static void refreshStat() {
         if (comboBox.getItemCount() ==0) {
-            label1.setText("");
-            label2.setText("");
-            label3.setText("");
-            label4.setText("");
+            statLabel.setText("");
         }
         else {
             List<PatRectangle> pat = patViewer.getList().get(comboBox.getSelectedIndex());
 
-            label1.setText("В выбранном файле " + pat.size() + " элементов   ");
-
             Statistic statistic = Statistic.calculate(pat);
 
-            label2.setText("Cуммарный пробег по X/Y " + String.format("%.1f", (statistic.getSymProbeg() / 1000000d)));
-            label3.setText("Изменение шторки " + statistic.getKolIzmStor());
-            label4.setText("Изменение угла поворота " + statistic.getKolIzmYgl());
+            //language=HTML
+            String msg = "" +
+                    "<html><body style='white-space: pre'>" +
+                    "Количество элементов: %d<br><br>" +
+                    "Пробег по X/Y: %.1f<br>" +
+                    "Изменение шторки: %d<br>" +
+                    "Изменение угла: %d" +
+                    "</body></html>";
+
+            String text = String.format(msg,
+                    pat.size(), statistic.getSymProbeg() / 1000000d, statistic.getKolIzmStor(), statistic.getKolIzmYgl());
+
+            statLabel.setText(text);
         }
     }
 
-    private static String colorNum(long num) {
-        if (num == 0)
-            return "0";
-
-        String color = num < 0 ? "#f00" : "#0f0";
-        return "<span style='color: " + color + "'>" + num + "</span>";
-    }
+//    private static String colorNum(long num) {
+//        if (num == 0)
+//            return "0";
+//
+//        String color = num < 0 ? "#f00" : "#0f0";
+//        return "<span style='color: " + color + "'>" + num + "</span>";
+//    }
 
     private static void optimize(int index, AbstractOptimization optimizator) {
         List<PatRectangle> pat = patViewer.getList().get(index);
