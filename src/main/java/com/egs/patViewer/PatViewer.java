@@ -12,7 +12,6 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -43,21 +42,28 @@ public class PatViewer extends JComponent {
     private boolean fOneOutput = false;
     private boolean ffill = false;
     private int sizeOutput = 0;
-    private int max = 0;
     private String SaveImag = "-";
     private String nameFile = "";
     private static SimpleDateFormat formatdata = new SimpleDateFormat("dd.MM.yyyy HH:mm");
     private String Printer = "";
     private Boolean writeName = true;
     private Boolean writeData = true;
-    private static Color[] colors = {Color.black, Color.red, Color.green, Color.yellow, Color.blue, Color.pink, Color.orange, Color.darkGray, Color.cyan, Color.magenta};
+    private static Color[] colors = {Color.black, Color.green, Color.yellow, Color.blue, Color.pink, Color.orange, Color.darkGray, Color.cyan, Color.magenta};
     private boolean flagLable;
+
+    private boolean showNonVisible = true;
+    private Color nonVisibleColor = new Color(0xE4E4E4);
 
     public int getListSize() {
         return list.size();
     }
 
     public int getOneOutSize() {
+        int max = 0;
+        for (List<PatRectangle> patRectangles : list) {
+            max = Math.max(patRectangles.size(), max);
+        }
+
         return max;
     }
 
@@ -70,13 +76,7 @@ public class PatViewer extends JComponent {
     }
 
     public void setSizePercent(Double d) {
-        int max2 = 0;
-        for (List<PatRectangle> list1 : list) {
-            if (max2 < list1.size()) {
-                max2 = list1.size();
-            }
-        }
-        sizeOutput = (int) (max * d);
+        sizeOutput = (int) (getOneOutSize() * d);
         repaint();
     }
 
@@ -87,6 +87,22 @@ public class PatViewer extends JComponent {
     public void setFfill(boolean ffill) {
         this.ffill = ffill;
         repaint();
+    }
+
+    public boolean isShowNonVisible() {
+        return showNonVisible;
+    }
+
+    public void setShowNonVisible(boolean showNonVisible) {
+        this.showNonVisible = showNonVisible;
+    }
+
+    public Color getNonVisibleColor() {
+        return nonVisibleColor;
+    }
+
+    public void setNonVisibleColor(Color nonVisibleColor) {
+        this.nonVisibleColor = nonVisibleColor;
     }
 
     public void oppositefOutput() {
@@ -278,89 +294,94 @@ public class PatViewer extends JComponent {
         paint0(g);
     }
 
+    private void paintRect(Graphics g, PatRectangle i, int mx[], int my[]) {
+        mx[0] = mx[3] = i.getX() - (i.getW() / 2);
+        mx[1] = mx[2] = i.getX() + (i.getW() / 2);
+
+        my[0] = my[1] = i.getY() + (i.getH() / 2);
+        my[2] = my[3] = i.getY() - (i.getH() / 2);
+
+        if (i.getA() != 0) {
+            double radians = Math.toRadians(i.getA() / 10d);
+
+            for (int j = 0; j < 4; j++) {
+                int x1 = mx[j] - i.getX();
+                int y1 = my[j] - i.getY();
+
+                double x2 = (x1 * (Math.cos(radians))) - (y1 * (Math.sin(radians)));
+                double y2 = (x1 * (Math.sin(radians))) + (y1 * (Math.cos(radians)));
+
+                mx[j] = (int) ((i.getX() + x2));
+                my[j] = (int) ((i.getY() + y2));
+            }
+        }
+
+        for (int j = 0; j < 4; j++) {
+            if (reverseX)
+                mx[j] = maxX - mx[j];
+
+            if (reverseY)
+                my[j] = maxY - my[j];
+
+            mx[j] = (int) (mx[j] * factor + x);
+            my[j] = (int) (my[j] * factor + y);
+        }
+
+        g.drawPolygon(mx, my, 4);
+        if (ffill) {
+            g.fillPolygon(mx, my, 4);
+        }
+    }
+
     private void paint0(Graphics g) {
         int color = 0;
         if(flagLable) {
-     //       Font font = new Font("Serif", Font.ROMAN_BASELINE, 25);
-    //        g.setFont(font);
-    //        g.drawString(nameFile.substring(0, nameFile.indexOf(".")), (int) getSize().getWidth() / 2, 35);
             Font font = new Font("Serif", Font.ROMAN_BASELINE, FontSize);
             g.setFont(font);
             g.drawString(nameFile.substring(0, nameFile.lastIndexOf(".")), FontX, FontY);
             g.drawString(formatdata.format(new Date().getTime()), (int) getSize().getWidth() / 2, (int) getSize().getHeight() - 20);
         }
 
-        for (List<PatRectangle> list1 : list) {
-            g.setColor(colors[color++]);
-            if (color == 10) {
-                color = 0;
-            }
+        int mx[] = new int[4];
+        int my[] = new int[4];
 
-            int mx[] = new int[4];
-            int my[] = new int[4];
-
-            for (int k = 0; k < list1.size(); k++) {
-                if ((sizeOutput > k) || (!fOneOutput)) {
-                    PatRectangle i = list1.get(k);
-                    boolean endFlag = false;
-
-                    if ((sizeOutput - 1 == k) && (fOneOutput)) {
-                        endFlag = true;
-                    }
-
-                    mx[0] = mx[3] = i.getX() - (i.getW() / 2);
-                    mx[1] = mx[2] = i.getX() + (i.getW() / 2);
-
-                    my[0] = my[1] = i.getY() + (i.getH() / 2);
-                    my[2] = my[3] = i.getY() - (i.getH() / 2);
-
-                    if (i.getA() != 0) {
-                        double radians = Math.toRadians(i.getA() / 10d);
-
-                        for (int j = 0; j < 4; j++) {
-                            int x1 = mx[j] - i.getX();
-                            int y1 = my[j] - i.getY();
-
-                            double x2 = (x1 * (Math.cos(radians))) - (y1 * (Math.sin(radians)));
-                            double y2 = (x1 * (Math.sin(radians))) + (y1 * (Math.cos(radians)));
-
-                            mx[j] = (int) ((i.getX() + x2));
-                            my[j] = (int) ((i.getY() + y2));
-                        }
-                    }
-
-                    if (reverseX) {
-                        for (int j = 0; j < 4; j++) {
-                            mx[j] = maxX - mx[j];
-                        }
-                    }
-
-                    if (reverseY) {
-                        for (int j = 0; j < 4; j++) {
-                            my[j] = maxY - my[j];
-                        }
-                    }
-
-                    for (int j = 0; j < 4; j++) {
-                        mx[j] = (int) (mx[j] * factor + x);
-                        my[j] = (int) (my[j] * factor + y);
-                    }
-
-                    if (endFlag) {
-                        g.setColor(colors[color++]);
-                    }
-
-                    g.drawPolygon(mx, my, 4);
-                    if (ffill) {
-                        g.fillPolygon(mx, my, 4);
-                    }
-
-                    if (endFlag) {
-                        g.setColor(colors[--color]);
+        if (fOneOutput) {
+            if (showNonVisible) {
+                g.setColor(nonVisibleColor);
+                for (List<PatRectangle> list1 : list) {
+                    for (int k = sizeOutput; k < list1.size(); k++) {
+                        paintRect(g, list1.get(k), mx, my);
                     }
                 }
             }
+
+            for (List<PatRectangle> list1 : list) {
+                g.setColor(colors[color++]);
+                if (color == colors.length) {
+                    color = 0;
+                }
+
+                for (int k = 0, end = Math.min(list1.size(), sizeOutput); k < end; k++) {
+                    if (sizeOutput - 1 == k) {
+                        g.setColor(Color.red);
+                    }
+
+                    paintRect(g, list1.get(k), mx, my);
+                }
+            }
         }
+        else {
+            for (List<PatRectangle> list1 : list) {
+                g.setColor(colors[color++]);
+                if (color == 10)
+                    color = 0;
+
+                for (PatRectangle rect : list1) {
+                    paintRect(g, rect, mx, my);
+                }
+            }
+        }
+
     }
 
     public void clearList() {
@@ -432,11 +453,6 @@ public class PatViewer extends JComponent {
 
     public void add(List<PatRectangle> list1) {
         list.add(list1);
-        for (List<PatRectangle> list2 : list) {
-            if (list2.size() > max) {
-                max = list2.size();
-            }
-        }
         optimumPosition();
     }
 
@@ -492,6 +508,7 @@ public class PatViewer extends JComponent {
         } catch (IOException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(null, "Failed to save image to " + tempFile.getAbsolutePath(), "Error", JOptionPane.ERROR_MESSAGE);
+            return;
         }
 
         PrintRequestAttributeSet pras = new HashPrintRequestAttributeSet();
@@ -502,37 +519,40 @@ public class PatViewer extends JComponent {
             return;
         }
 
-        String input ="";
-        for (int i = 0; i < pss.length; i++) {
-            if (Printer.equals(pss[i].getName())) {
-                input = Integer.toString(i);
-            }
-        }
-        if(input.equals("")){
-            StringBuilder s7 = new StringBuilder();
+        try {
+            String input ="";
             for (int i = 0; i < pss.length; i++) {
-                s7.append(pss[i].getName()).append(" Введите ").append(Integer.toString(i)).append("\n");
+                if (Printer.equals(pss[i].getName())) {
+                    input = Integer.toString(i);
+                }
             }
-            input = JOptionPane.showInputDialog(s7.toString());
-        }
+            if(input.equals("")){
+                StringBuilder s7 = new StringBuilder();
+                for (int i = 0; i < pss.length; i++) {
+                    s7.append(pss[i].getName()).append(" Введите ").append(Integer.toString(i)).append("\n");
+                }
+                input = JOptionPane.showInputDialog(s7.toString());
+            }
 
-        PrintService ps = pss[Integer.parseInt(input)];
-        DocPrintJob job = ps.createPrintJob();
-        FileInputStream fin = null;
-        try {
-            fin = new FileInputStream("image.png");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            PrintService ps = pss[Integer.parseInt(input)];
+            DocPrintJob job = ps.createPrintJob();
+
+            try (FileInputStream fin = new FileInputStream(tempFile)) {
+                Doc doc = new SimpleDoc(fin, DocFlavor.INPUT_STREAM.GIF, null);
+                job.print(doc, pras);
+                fin.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(null, "Failed to read image from " + tempFile.getAbsolutePath(), "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (PrintException e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(null, "Failed to print image: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
         }
-        Doc doc = new SimpleDoc(fin, DocFlavor.INPUT_STREAM.GIF, null);
-        try {
-            job.print(doc, pras);
-            fin.close();
-        } catch (IOException | PrintException e) {
-            e.printStackTrace();
-        }
-        if (!SaveImag.equals("+")) {
-            new File("image.png").delete();
+        finally {
+            if (!SaveImag.equals("+")) {
+                tempFile.delete();
+            }
         }
     }
 

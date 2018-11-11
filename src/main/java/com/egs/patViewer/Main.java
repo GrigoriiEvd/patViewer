@@ -203,6 +203,12 @@ public class Main {
         timer.setDelay(timerSpeed);
 
         patViewer = new PatViewer();
+
+        patViewer.setShowNonVisible(cfg.isShowNonVisible());
+        if (cfg.getNonVisibleColor() != null) {
+            patViewer.setNonVisibleColor(new Color(cfg.getNonVisibleColor()));
+        }
+
         patViewer.setSaveImag(cfg.getSaveImag());
         patViewer.setFontSize(cfg.getFontSize());
         patViewer.setFontX(cfg.getFontX());

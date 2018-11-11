@@ -28,6 +28,9 @@ public class Configuration {
     private boolean writeName;
     private boolean writeData;
 
+    private boolean showNonVisible;
+    private Integer nonVisibleColor;
+
     public int getExelA() {
         return exelA;
     }
@@ -124,6 +127,40 @@ public class Configuration {
         return writeData;
     }
 
+    public boolean isShowNonVisible() {
+        return showNonVisible;
+    }
+
+    public Integer getNonVisibleColor() {
+        return nonVisibleColor;
+    }
+
+    private static Integer readInt(Element elj, String attrName, Integer defValue) {
+        String s = elj.getAttribute(attrName).trim();
+        if (s.trim().isEmpty()) {
+            return defValue;
+        }
+
+        return Integer.decode(s);
+    }
+
+    private static String readStr(Element elj, String attrName, String defValue) {
+        if (elj.hasAttribute(attrName)) {
+            return elj.getAttribute(attrName);
+        }
+
+        return defValue;
+    }
+
+    private static boolean readBool(Element elj, String attrName, boolean defValue) {
+        String s = elj.getAttribute(attrName).trim();
+        if (s.trim().isEmpty()) {
+            return defValue;
+        }
+
+        return "+".equals(s) || "true".equalsIgnoreCase(s);
+    }
+
     public static Configuration read() {
         Configuration cfg = new Configuration();
 
@@ -170,8 +207,11 @@ public class Configuration {
 
                 cfg.setPrinter(elj.getAttribute("Printer"));
 
-                cfg.writeName = elj.getAttribute("WriteName").equals("+");
-                cfg.writeData = elj.getAttribute("WriteData").equals("+");
+                cfg.writeName = readBool(elj, "WriteName", true);
+                cfg.writeData = readBool(elj, "WriteData", true);
+
+                cfg.showNonVisible = readBool(elj, "ShowNonVisible", true);
+                cfg.nonVisibleColor = readInt(elj, "NonVisibleColor", null);
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Ошибка при открытии Xml файла с настройками, применены стандартные");
