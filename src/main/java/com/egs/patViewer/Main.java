@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
@@ -24,7 +25,15 @@ public class Main {
     private static int timerSpeed = 500;
     private static String workCatalog;
     private static String saveCatalog;
+
     private static PatViewer patViewer;
+    private static JComboBox<String> comboBox;
+
+    private static JLabel label1 = new JLabel("");
+    private static JLabel label2 = new JLabel("");
+    private static JLabel label3 = new JLabel("");
+    private static JLabel label4 = new JLabel("");
+
     private static JProgressBar x;
     private static boolean fpor = true;
     private static int ExelA = 10000;
@@ -33,11 +42,6 @@ public class Main {
     private static int FontSize = 25;
     private static int FontX = 1000;
     private static int FontY = 100;
-    private static int symProbeg = 0;
-    private static int kolIzmStor = 0;
-    private static int kolIzmYgl = 0;
-
-    private static PatRectangle predRect;
 
     private static JFileChooser openFileChooser;
     private static JFileChooser saveFileChooser;
@@ -188,20 +192,30 @@ public class Main {
         viewMenu.add(zoomIn);
         viewMenu.add(zoomOut);
 
+        JMenu optimization = new JMenu("Optimization");
+        optimization.setMnemonic(KeyEvent.VK_O);
+
+        JMenuItem optimize = new JMenuItem("Оптимизировать файл");
+        optimize.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, InputEvent.CTRL_MASK));
+        optimize.addActionListener(e -> optimize(comboBox.getSelectedIndex(), Main::OptimumPat));
+
+        JMenuItem optimizeBlocks = new JMenuItem("Оптимизировать файл с блоками");
+        optimizeBlocks.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, InputEvent.CTRL_MASK + InputEvent.ALT_MASK));
+        optimizeBlocks.addActionListener(e -> optimize(comboBox.getSelectedIndex(), Main::OptimumPat1));
+
+        optimization.add(optimize);
+        optimization.add(optimizeBlocks);
+
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(fileMenu);
         menuBar.add(viewMenu);
+        menuBar.add(optimization);
         return menuBar;
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        JLabel label1 = new JLabel("");
-        JLabel label2 = new JLabel("");
-        JLabel label3 = new JLabel("");
-        JLabel label4 = new JLabel("");
-
         patViewer = new PatViewer();
-        JComboBox<String> comboBox = new JComboBox<>();
+        comboBox = new JComboBox<>();
 
         ReadXml();
 
@@ -242,88 +256,19 @@ public class Main {
         buttonPanel.setLayout(buttonPaneLayout);
 
         comboBox.addActionListener(e -> {
-            if (comboBox.getItemCount() > 0) {
-                label1.setText("В выбранном файле " + Integer.toString(patViewer.getList().get(comboBox.getSelectedIndex()).size()) + " элементов   ");
-                int symProbeg = 0;
-                int kolIzmStor = 0;
-                int kolIzmYgl = 0;
-                PatRectangle predRect = patViewer.getList().get(comboBox.getSelectedIndex()).get(0);
-                for (PatRectangle i : patViewer.getList().get(comboBox.getSelectedIndex())) {
-                    symProbeg = symProbeg + Math.abs(predRect.getX() - i.getX()) + Math.abs(predRect.getY() - i.getY());
-                    if ((predRect.getH() != i.getH()) || (predRect.getW() != i.getW())) {
-                        kolIzmStor++;
-                    }
-                    if ((predRect.getA() != i.getA())) {
-                        kolIzmYgl++;
-                    }
-                    predRect = i;
-                }
-                label2.setText("Cуммарный пробег по X/Y " + String.format("%.1f", ((float) symProbeg / 1000000f)) + "   ");
-                label3.setText("Изменение шторки " + Integer.toString(kolIzmStor) + "   ");
-                label4.setText("Изменение угла поворота " + Integer.toString(kolIzmYgl) + "   ");
-            } else {
-                label1.setText("");
-                label2.setText("");
-                label3.setText("");
-                label4.setText("");
-            }
+            refreshStat();
         });
 
         buttonPanel.add(Box.createVerticalStrut(20));
 
         menuPanel.add(comboBox);
-        JButton btnOptimKv = new JButton("Оптимизировать файл с блоками");
-        btnOptimKv.addActionListener(e -> {
-            symProbeg = 0;
-            kolIzmStor = 0;
-            kolIzmYgl = 0;
-            patViewer.setList(comboBox.getSelectedIndex(), OptimumPat1(patViewer.getList().get(comboBox.getSelectedIndex())));
-            patViewer.optimumPosition();
-            for (PatRectangle i : patViewer.getList().get(comboBox.getSelectedIndex())) {
-                symProbeg = symProbeg + Math.abs(predRect.getX() - i.getX()) + Math.abs(predRect.getY() - i.getY());
-                if ((predRect.getH() != i.getH()) || (predRect.getW() != i.getW())) {
-                    kolIzmStor++;
-                }
-                if ((predRect.getA() != i.getA())) {
-                    kolIzmYgl++;
-                }
-                predRect = i;
-            }
-            label2.setText("Cуммарный пробег по X/Y " + String.format("%.1f", (symProbeg / 1000000f)) + "   ");
-            label3.setText("Изменение шторки " + Integer.toString(kolIzmStor) + "   ");
-            label4.setText("Изменение угла поворота " + Integer.toString(kolIzmYgl) + "   ");
-        });
-
-        JButton btnOptim = new JButton("Оптимизировать файл");
-        btnOptim.addActionListener(e -> {
-            symProbeg = 0;
-            kolIzmStor = 0;
-            kolIzmYgl = 0;
-            patViewer.setList(comboBox.getSelectedIndex(), OptimumPat(patViewer.getList().get(comboBox.getSelectedIndex())));
-            patViewer.optimumPosition();
-            for (PatRectangle i : patViewer.getList().get(comboBox.getSelectedIndex())) {
-                symProbeg = symProbeg + Math.abs(predRect.getX() - i.getX()) + Math.abs(predRect.getY() - i.getY());
-                if ((predRect.getH() != i.getH()) || (predRect.getW() != i.getW())) {
-                    kolIzmStor++;
-                }
-                if ((predRect.getA() != i.getA())) {
-                    kolIzmYgl++;
-                }
-                predRect = i;
-            }
-            label2.setText("Cуммарный пробег по X/Y " + String.format("%.1f", (symProbeg / 1000000f)) + "   ");
-            label3.setText("Изменение шторки " + Integer.toString(kolIzmStor) + "   ");
-            label4.setText("Изменение угла поворота " + Integer.toString(kolIzmYgl) + "   ");
-        });
-
-        menuPanel.add(btnOptim);
 
         if (file != null) {
             comboBox.addItem(file.getAbsolutePath());
         }
         menuPanel.setLayout(new BoxLayout(menuPanel, BoxLayout.X_AXIS));
         buttonPanel.add(Box.createVerticalStrut(20));
-        buttonPanel.add(btnOptimKv);
+
         //    buttonPanel.add(btnPovorot);
         buttonPanel.add(Box.createVerticalStrut(20));
         // buttonPanel.add(Box.createVerticalStrut(20));
@@ -424,22 +369,9 @@ public class Main {
         buttonPanel.add(label);
         buttonPanel.add(PanelPlay);
         buttonPanel.add(PanelPlay1);
-        label1.setText("В выбранном файле " + Integer.toString(patViewer.getList().get(comboBox.getSelectedIndex()).size()) + " элементов");
-        predRect = patViewer.getList().get(comboBox.getSelectedIndex()).get(0);
-        for (PatRectangle i : patViewer.getList().get(comboBox.getSelectedIndex())) {
-            symProbeg = symProbeg + Math.abs(predRect.getX() - i.getX()) + Math.abs(predRect.getY() - i.getY());
-            if ((predRect.getH() != i.getH()) || (predRect.getW() != i.getW())) {
-                kolIzmStor++;
-            }
-            if ((predRect.getA() != i.getA())) {
-                kolIzmYgl++;
-            }
-            predRect = i;
-        }
-        label2.setText("Cуммарный пробег по X/Y " + String.format("%.1f", (symProbeg / 1000000f)) + "   ");
-        //  label2.setText("Cуммарный пробег по X/Y " + Float.toString(symProbeg)+"   ");
-        label3.setText("Изменение шторки " + Integer.toString(kolIzmStor) + "   ");
-        label4.setText("Изменение угла поворота " + Integer.toString(kolIzmYgl) + "   ");
+
+        refreshStat();
+
         buttonPanel.add(label1);
         buttonPanel.add(label2);
         buttonPanel.add(label3);
@@ -463,6 +395,54 @@ public class Main {
             }
         }
     });
+
+    private static void refreshStat() {
+        if (comboBox.getItemCount() ==0) {
+            label1.setText("");
+            label2.setText("");
+            label3.setText("");
+            label4.setText("");
+        }
+        else {
+            List<PatRectangle> pat = patViewer.getList().get(comboBox.getSelectedIndex());
+
+            label1.setText("В выбранном файле " + pat.size() + " элементов   ");
+
+            PatRectangle predRect = null;
+
+            long symProbeg = 0;
+            long kolIzmStor = 0;
+            long kolIzmYgl = 0;
+
+            for (PatRectangle i : pat) {
+                if (predRect == null) {
+                    predRect = i;
+                }
+                else {
+                    symProbeg = symProbeg + Math.abs(predRect.getX() - i.getX()) + Math.abs(predRect.getY() - i.getY());
+                    if ((predRect.getH() != i.getH()) || (predRect.getW() != i.getW())) {
+                        kolIzmStor++;
+                    }
+                    if ((predRect.getA() != i.getA())) {
+                        kolIzmYgl++;
+                    }
+                    predRect = i;
+                }
+            }
+
+            label2.setText("Cуммарный пробег по X/Y " + String.format("%.1f", (symProbeg / 1000000d)));
+            label3.setText("Изменение шторки " + kolIzmStor);
+            label4.setText("Изменение угла поворота " + kolIzmYgl);
+        }
+    }
+
+    private static void optimize(int index, Function<List<PatRectangle>, List<PatRectangle>> optimizator) {
+        List<PatRectangle> pat = patViewer.getList().get(index);
+        pat = optimizator.apply(pat);
+        patViewer.setList(index, pat);
+        patViewer.optimumPosition();
+        refreshStat();
+    }
 
     public static int timerFast() {
         int x3 = timerSpeed;
