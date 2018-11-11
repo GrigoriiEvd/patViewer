@@ -1,15 +1,16 @@
 package com.egs.patViewer;
 
 import java.util.List;
-import java.util.function.Function;
 
-public abstract class AbstractOptimization implements Function<List<PatRectangle>, List<PatRectangle>> {
+public abstract class AbstractOptimization {
 
     protected final Configuration cfg;
 
     public AbstractOptimization(Configuration cfg) {
         this.cfg = cfg;
     }
+
+    public abstract List<PatRectangle> apply(List<PatRectangle> patRectangles);
 
     public double lengthPat(PatRectangle x1, PatRectangle y1) {
         return ((cfg.getExelA() * Math.abs(x1.getA() - y1.getA()))

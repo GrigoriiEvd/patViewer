@@ -6,9 +6,9 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
@@ -403,40 +403,60 @@ public class Main {
 
             label1.setText("В выбранном файле " + pat.size() + " элементов   ");
 
-            PatRectangle predRect = null;
+            Statistic statistic = Statistic.calculate(pat);
 
-            long symProbeg = 0;
-            long kolIzmStor = 0;
-            long kolIzmYgl = 0;
-
-            for (PatRectangle i : pat) {
-                if (predRect == null) {
-                    predRect = i;
-                }
-                else {
-                    symProbeg = symProbeg + Math.abs(predRect.getX() - i.getX()) + Math.abs(predRect.getY() - i.getY());
-                    if ((predRect.getH() != i.getH()) || (predRect.getW() != i.getW())) {
-                        kolIzmStor++;
-                    }
-                    if ((predRect.getA() != i.getA())) {
-                        kolIzmYgl++;
-                    }
-                    predRect = i;
-                }
-            }
-
-            label2.setText("Cуммарный пробег по X/Y " + String.format("%.1f", (symProbeg / 1000000d)));
-            label3.setText("Изменение шторки " + kolIzmStor);
-            label4.setText("Изменение угла поворота " + kolIzmYgl);
+            label2.setText("Cуммарный пробег по X/Y " + String.format("%.1f", (statistic.getSymProbeg() / 1000000d)));
+            label3.setText("Изменение шторки " + statistic.getKolIzmStor());
+            label4.setText("Изменение угла поворота " + statistic.getKolIzmYgl());
         }
     }
 
-    private static void optimize(int index, Function<List<PatRectangle>, List<PatRectangle>> optimizator) {
+    private static String colorNum(long num) {
+        if (num == 0)
+            return "0";
+
+        String color = num < 0 ? "#f00" : "#0f0";
+        return "<span style='color: " + color + "'>" + num + "</span>";
+    }
+
+    private static void optimize(int index, AbstractOptimization optimizator) {
         List<PatRectangle> pat = patViewer.getList().get(index);
-        pat = optimizator.apply(pat);
-        patViewer.setList(index, pat);
-        patViewer.optimumPosition();
-        refreshStat();
+
+        Statistic oldStat = Statistic.calculate(pat);
+
+        long startTime = System.currentTimeMillis();
+
+        pat = optimizator.apply(new ArrayList<>(pat));
+
+        long time = System.currentTimeMillis() - startTime;
+
+        Statistic newStat = Statistic.calculate(pat);
+
+        //language=HTML
+        String msg = "" +
+                "<html>" +
+                "<body>" +
+                "Пробег: %.1f -> <strong>%.1f</strong> (%.1f)<br>" +
+                "Изменение шторки: %d -> <strong>%d</strong> (%d)<br>" +
+                "Изменение угла: %d -> <strong>%d</strong> (%d)<br>" +
+                "<br>" +
+                "Элементов: %d<br>" +
+                "Время оптимизации: %.1fсек<br>" +
+                "</body>" +
+                "</html>";
+
+        int res = JOptionPane.showConfirmDialog(null, String.format(msg,
+                oldStat.getSymProbeg() / 1000000d, newStat.getSymProbeg() / 1000000d, (newStat.getSymProbeg() - oldStat.getSymProbeg()) / 1000000d,
+                oldStat.getKolIzmStor(), newStat.getKolIzmStor(), newStat.getKolIzmStor() - oldStat.getKolIzmStor(),
+                oldStat.getKolIzmYgl(), newStat.getKolIzmYgl(), newStat.getKolIzmYgl() - oldStat.getKolIzmYgl(),
+                pat.size(), time / 1000f),
+                "Optimization done", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (res == 0) {
+            patViewer.setList(index, pat);
+            patViewer.optimumPosition();
+            refreshStat();
+        }
     }
 
     public static int timerFast() {
