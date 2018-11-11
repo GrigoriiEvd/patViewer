@@ -200,6 +200,8 @@ public class Main {
         cfg = Configuration.read();
 
         timerSpeed = cfg.getTimerSpeed();
+        timer.setDelay(timerSpeed);
+
         patViewer = new PatViewer();
         patViewer.setSaveImag(cfg.getSaveImag());
         patViewer.setFontSize(cfg.getFontSize());
@@ -378,7 +380,7 @@ public class Main {
         SwingUtilities.invokeLater(() -> patViewer.optimumPosition());
     }
 
-    static javax.swing.Timer timer = new javax.swing.Timer(timerSpeed, new ActionListener() {
+    static javax.swing.Timer timer = new javax.swing.Timer(0, new ActionListener() {
         public void actionPerformed(ActionEvent e) {
             if (fpor) {
                 progress.setValue((int) (100f * (patViewer.incSizeVisible() / patViewer.getOneOutSize())));
