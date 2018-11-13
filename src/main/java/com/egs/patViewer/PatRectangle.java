@@ -38,6 +38,12 @@ public class PatRectangle {
         double mx[] = new double[4];
         double my[] = new double[4];
 
+        loadCornerDots(mx, my);
+
+        return Utils.insidePolygon(mx, my, x, y);
+    }
+
+    public void loadCornerDots(double mx[], double my[]) {
         mx[0] = mx[3] = - w / 2d;
         mx[1] = mx[2] = w / 2d;
 
@@ -60,8 +66,6 @@ public class PatRectangle {
             mx[j] += this.x;
             my[j] += this.y;
         }
-
-        return Utils.insidePolygon(mx, my, x, y);
     }
 
 }

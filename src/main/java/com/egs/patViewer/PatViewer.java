@@ -351,37 +351,18 @@ public class PatViewer extends JComponent {
         paint0(g);
     }
 
-    private void paintRect(Graphics g, PatRectangle i, int mx[], int my[]) {
-        mx[0] = mx[3] = - i.getW() / 2;
-        mx[1] = mx[2] = i.getW() / 2;
-
-        my[0] = my[1] = i.getH() / 2;
-        my[2] = my[3] = - i.getH() / 2;
-
-        if (i.getA() != 0) {
-            double radians = Math.toRadians(i.getA() / 10d);
-
-            for (int j = 0; j < 4; j++) {
-                int x1 = mx[j];
-                int y1 = my[j];
-
-                mx[j] = (int) ((x1 * (Math.cos(radians))) - (y1 * (Math.sin(radians))));
-                my[j] = (int) ((x1 * (Math.sin(radians))) + (y1 * (Math.cos(radians))));
-            }
-        }
+    private void paintRect(Graphics g, PatRectangle rect, double dmx[], double dmy[], int[] mx, int[] my) {
+        rect.loadCornerDots(dmx, dmy);
 
         for (int j = 0; j < 4; j++) {
-            mx[j] += i.getX();
-            my[j] += i.getY();
-
             if (reverseX)
-                mx[j] = maxX - mx[j];
+                dmx[j] = maxX - dmx[j];
 
             if (reverseY)
-                my[j] = maxY - my[j];
+                dmy[j] = maxY - dmy[j];
 
-            mx[j] = (int) (mx[j] * factor + x);
-            my[j] = (int) (my[j] * factor + y);
+            mx[j] = (int) (dmx[j] * factor + x);
+            my[j] = (int) (dmy[j] * factor + y);
         }
 
         g.drawPolygon(mx, my, 4);
@@ -399,6 +380,8 @@ public class PatViewer extends JComponent {
             g.drawString(formatdata.format(new Date().getTime()), (int) getSize().getWidth() / 2, (int) getSize().getHeight() - 20);
         }
 
+        double dmx[] = new double[4];
+        double dmy[] = new double[4];
         int mx[] = new int[4];
         int my[] = new int[4];
 
@@ -409,7 +392,7 @@ public class PatViewer extends JComponent {
                     for (int k = sizeOutput; k < list1.size(); k++) {
                         PatRectangle rect = list1.get(k);
                         if (rect != selected)
-                            paintRect(g, rect, mx, my);
+                            paintRect(g, rect, dmx, dmy, mx, my);
                     }
                 }
             }
@@ -427,7 +410,7 @@ public class PatViewer extends JComponent {
 
                     PatRectangle rect = list1.get(k);
                     if (rect != selected)
-                        paintRect(g, rect, mx, my);
+                        paintRect(g, rect, dmx, dmy, mx, my);
                 }
             }
         }
@@ -439,14 +422,14 @@ public class PatViewer extends JComponent {
 
                 for (PatRectangle rect : list1) {
                     if (rect != selected)
-                        paintRect(g, rect, mx, my);
+                        paintRect(g, rect, dmx, dmy, mx, my);
                 }
             }
         }
 
         if (selected != null) {
             g.setColor(SELECTED_COLOR);
-            paintRect(g, selected, mx, my);
+            paintRect(g, selected, dmx, dmy, mx, my);
         }
     }
 
