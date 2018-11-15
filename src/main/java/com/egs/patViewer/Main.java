@@ -7,7 +7,6 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -78,7 +77,7 @@ public class Main {
                 }
 
                 try {
-                    PatWriter.save(file1, patViewer.getList().stream().flatMap(Collection::stream).collect(Collectors.toList()));
+                    PatWriter.save(file1, patViewer.allRect().collect(Collectors.toList()));
                 } catch (IOException e1) {
                     JOptionPane.showMessageDialog(null, e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 }
@@ -271,7 +270,7 @@ public class Main {
         btnTmer.addActionListener(e -> {
             if (btnTmer.getText().equals("Выводить по одному")) {
                 btnTmer.setText("Вывести всё");
-                if (patViewer.getListSize() > 0) {
+                if (patViewer.getOpenFileCount() > 0) {
                     fpor = true;
                     timer.start();
                 } else {
@@ -429,9 +428,7 @@ public class Main {
             statLabel.setText("");
         }
         else {
-            List<PatRectangle> pat = patViewer.getList().get(comboBox.getSelectedIndex());
-
-            Statistic statistic = Statistic.calculate(pat);
+            Statistic statistic = Statistic.calculate(patViewer.allRect());
 
             //language=HTML
             String msg = "" +
@@ -443,7 +440,7 @@ public class Main {
                     "</body></html>";
 
             String text = String.format(msg,
-                    pat.size(), statistic.getSymProbeg() / 1000000d, statistic.getKolIzmStor(), statistic.getKolIzmYgl());
+                    statistic.getCount(), statistic.getSymProbeg() / 1000000d, statistic.getKolIzmStor(), statistic.getKolIzmYgl());
 
             statLabel.setText(text);
         }
@@ -458,13 +455,13 @@ public class Main {
 //    }
 
     private static void optimize(int index, AbstractOptimization optimizator) {
-        List<PatRectangle> pat = patViewer.getList().get(index);
+        PatFile patFile = patViewer.getFiles().get(index);
 
-        Statistic oldStat = Statistic.calculate(pat);
+        Statistic oldStat = Statistic.calculate(patFile.getList());
 
         long startTime = System.currentTimeMillis();
 
-        pat = optimizator.apply(new ArrayList<>(pat));
+        List<PatRectangle> pat = optimizator.apply(new ArrayList<>(patFile.getList()));
 
         long time = System.currentTimeMillis() - startTime;
 
@@ -491,7 +488,9 @@ public class Main {
                 "Optimization done", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
         if (res == 0) {
-            patViewer.setList(index, pat);
+            patFile.getList().clear();
+            patFile.getList().addAll(pat);
+
             patViewer.optimumPosition();
             refreshStat();
         }

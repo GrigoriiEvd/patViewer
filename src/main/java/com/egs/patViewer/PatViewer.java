@@ -19,6 +19,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /**
  * Created by EGS on 03.10.2015.
@@ -29,7 +30,7 @@ public class PatViewer extends JComponent {
 
     private static final Color SELECTED_COLOR = Color.red;
 
-    private List<List<PatRectangle>> list = new ArrayList<>();
+    private final List<PatFile> files = new ArrayList<>();
     private float factor = 1f / 500;
     private int x = 0;
     private int y = 0;
@@ -65,25 +66,25 @@ public class PatViewer extends JComponent {
         selectionListeners.add(listener);
     }
 
-    public int getListSize() {
-        return list.size();
+    public int getOpenFileCount() {
+        return files.size();
     }
 
     public int getOneOutSize() {
         int max = 0;
-        for (List<PatRectangle> patRectangles : list) {
-            max = Math.max(patRectangles.size(), max);
+        for (PatFile file : files) {
+            max = Math.max(file.getList().size(), max);
         }
 
         return max;
     }
 
-    public List<List<PatRectangle>> getList() {
-        return list;
+    public List<PatFile> getFiles() {
+        return files;
     }
 
-    public void setList(int i5, List<PatRectangle> l5) {
-        list.set(i5, l5);
+    public Stream<PatRectangle> allRect() {
+        return files.stream().flatMap(f -> f.getList().stream());
     }
 
     public void setSizePercent(Double d) {
@@ -312,8 +313,8 @@ public class PatViewer extends JComponent {
     }
 
     private PatRectangle findRect(int x, int y) {
-        for (List<PatRectangle> l : list) {
-            for (PatRectangle rect : l) {
+        for (PatFile file : files) {
+            for (PatRectangle rect : file.getList()) {
                 if (rect.isInside(x, y))
                     return rect;
             }
@@ -388,7 +389,8 @@ public class PatViewer extends JComponent {
         if (fOneOutput) {
             if (showNonVisible) {
                 g.setColor(nonVisibleColor);
-                for (List<PatRectangle> list1 : list) {
+                for (PatFile file : files) {
+                    List<PatRectangle> list1 = file.getList();
                     for (int k = sizeOutput; k < list1.size(); k++) {
                         PatRectangle rect = list1.get(k);
                         if (rect != selected)
@@ -397,7 +399,9 @@ public class PatViewer extends JComponent {
                 }
             }
 
-            for (List<PatRectangle> list1 : list) {
+            for (PatFile file : files) {
+                List<PatRectangle> list1 = file.getList();
+
                 g.setColor(colors[color++]);
                 if (color == colors.length) {
                     color = 0;
@@ -415,12 +419,12 @@ public class PatViewer extends JComponent {
             }
         }
         else {
-            for (List<PatRectangle> list1 : list) {
+            for (PatFile file : files) {
                 g.setColor(colors[color++]);
                 if (color == 10)
                     color = 0;
 
-                for (PatRectangle rect : list1) {
+                for (PatRectangle rect : file.getList()) {
                     if (rect != selected)
                         paintRect(g, rect, dmx, dmy, mx, my);
                 }
@@ -434,7 +438,7 @@ public class PatViewer extends JComponent {
     }
 
     public void clearList() {
-        this.list.clear();
+        this.files.clear();
         repaint();
     }
 
@@ -497,11 +501,12 @@ public class PatViewer extends JComponent {
             list = PatParser.parser(file);
         }
 
-        add(list);
+        add(new PatFile(file.getAbsolutePath(), list));
     }
 
-    public void add(List<PatRectangle> list1) {
-        list.add(list1);
+    public void add(PatFile file) {
+        assert !files.contains(file);
+        files.add(file);
         optimumPosition();
     }
 
@@ -510,8 +515,8 @@ public class PatViewer extends JComponent {
         maxY = -1000000;
         minX = 1000000;
         minY = 1000000;
-        for (List<PatRectangle> list1 : list) {
-            for (PatRectangle i : list1) {
+        for (PatFile file : files) {
+            for (PatRectangle i : file.getList()) {
                 if (maxX < (i.getX() + i.getW() / 2)) {
                     maxX = i.getX() + i.getW() / 2;
                 }

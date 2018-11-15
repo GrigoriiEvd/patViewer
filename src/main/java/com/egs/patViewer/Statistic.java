@@ -1,17 +1,25 @@
 package com.egs.patViewer;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.stream.Stream;
 
 public class Statistic {
+
+    private int count;
 
     private long symProbeg;
     private long kolIzmStor;
     private long kolIzmYgl;
 
-    public Statistic(long symProbeg, long kolIzmStor, long kolIzmYgl) {
+    public Statistic(int count, long symProbeg, long kolIzmStor, long kolIzmYgl) {
+        this.count = count;
         this.symProbeg = symProbeg;
         this.kolIzmStor = kolIzmStor;
         this.kolIzmYgl = kolIzmYgl;
+    }
+
+    public int getCount() {
+        return count;
     }
 
     public long getSymProbeg() {
@@ -26,14 +34,28 @@ public class Statistic {
         return kolIzmYgl;
     }
 
-    public static Statistic calculate(List<PatRectangle> pat) {
-        PatRectangle predRect = null;
+    public static Statistic calculate(Collection<PatRectangle> pat) {
+        return calculate(pat.stream());
+    }
 
-        long symProbeg = 0;
-        long kolIzmStor = 0;
-        long kolIzmYgl = 0;
+    public static Statistic calculate(Stream<PatRectangle> pat) {
+        StatCollector collector = new StatCollector();
+        pat.forEach(collector::add);
+        return collector.toStat();
+    }
 
-        for (PatRectangle rect : pat) {
+    private static class StatCollector {
+        private PatRectangle predRect = null;
+
+        private int count = 0;
+
+        private long symProbeg = 0;
+        private long kolIzmStor = 0;
+        private long kolIzmYgl = 0;
+
+        void add(PatRectangle rect) {
+            count++;
+
             if (predRect == null) {
                 predRect = rect;
             }
@@ -49,6 +71,8 @@ public class Statistic {
             }
         }
 
-        return new Statistic(symProbeg, kolIzmStor, kolIzmYgl);
+        Statistic toStat() {
+            return new Statistic(count, symProbeg, kolIzmStor, kolIzmYgl);
+        }
     }
 }
