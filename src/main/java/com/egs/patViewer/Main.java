@@ -186,14 +186,86 @@ public class Main {
         optimizeBlocks.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, InputEvent.CTRL_MASK + InputEvent.ALT_MASK));
         optimizeBlocks.addActionListener(e -> optimize(comboBox.getSelectedIndex(), new OptimizationBlocks(cfg)));
 
+        JMenuItem showInvalid = new JMenuItem("Показать невалидные элементы");
+        showInvalid.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I, InputEvent.CTRL_MASK));
+        showInvalid.addActionListener(e -> showInvalid());
+
         optimization.add(optimize);
         optimization.add(optimizeBlocks);
+        optimization.add(showInvalid);
 
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(fileMenu);
         menuBar.add(viewMenu);
         menuBar.add(optimization);
         return menuBar;
+    }
+
+    private static void showInvalid() {
+        Statistic statistic = Statistic.calculate(patViewer.allRect());
+
+        int limit;
+
+        if (statistic.getMaxX() > 100_000 || statistic.getMaxY() > 100_000)
+            limit = 4;
+        else
+            limit = 16;
+
+        StringBuilder res = new StringBuilder();
+
+        for (PatFile file : patViewer.getFiles()) {
+            boolean first = true;
+
+            List<PatRectangle> list = file.getList();
+
+            for (int i = 0; i < list.size(); i++) {
+                PatRectangle rect = list.get(i);
+
+                if (rect.getW() < limit || rect.getH() < limit) {
+                    if (first) {
+                        res.append(file.getName()).append('\n');
+                        first = false;
+                    }
+
+                    int pos = res.length();
+                    res.append(i + 1).append(':');
+                    while (res.length() < pos + 7) res.append(' ');
+
+                    res.append('X').append(rect.getX()).append('Y').append(rect.getY())
+                            .append('H').append(rect.getH()).append('W').append(rect.getW()).append('A').append(rect.getA())
+                            .append('\n');
+                }
+            }
+
+            if (!first)
+                res.append('\n');
+        }
+
+        if (res.length() == 0) {
+            JOptionPane.showMessageDialog(null, "No invalid rectangle found", "No error", JOptionPane.INFORMATION_MESSAGE);
+        }
+        else {
+            JDialog dialog = new JDialog();
+            dialog.setModal(false);
+
+            JTextArea textArea = new JTextArea(res.toString());
+            textArea.setFont(new Font("Monospaced", Font.PLAIN, 11));
+            textArea.setEditable(false);
+            JScrollPane scrollPane = new JScrollPane(textArea, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+            JPanel panel = new JPanel(new BorderLayout(5, 1));
+            panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+            panel.add(new JLabel("Invalid rectangles"), BorderLayout.NORTH);
+            panel.add(scrollPane, BorderLayout.CENTER);
+
+            dialog.setContentPane(panel);
+            dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+
+            dialog.setMinimumSize(new Dimension(400, 600));
+            dialog.pack();
+            dialog.setLocationRelativeTo(null);
+            dialog.setVisible(true);
+        }
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
@@ -436,11 +508,14 @@ public class Main {
                     "Количество элементов: %d<br><br>" +
                     "Пробег по X/Y: %.1f<br>" +
                     "Изменение шторки: %d<br>" +
-                    "Изменение угла: %d" +
+                    "Изменение угла: %d<br>" +
+                    "Плохие элементы: %s" +
                     "</body></html>";
 
             String text = String.format(msg,
-                    statistic.getCount(), statistic.getSymProbeg() / 1000000d, statistic.getKolIzmStor(), statistic.getKolIzmYgl());
+                    statistic.getCount(), statistic.getSymProbeg() / 1000000d, statistic.getKolIzmStor(), statistic.getKolIzmYgl(),
+                    statistic.getInvalidCount() == 0 ? "0" : "<span style='color: #cc0000'>" + statistic.getInvalidCount() + "</span>"
+                    );
 
             statLabel.setText(text);
         }
