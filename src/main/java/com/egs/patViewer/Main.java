@@ -147,6 +147,11 @@ public class Main {
         JMenuItem center = new JMenuItem("Optimal zoom and position");
         center.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_0, InputEvent.CTRL_MASK));
         center.addActionListener(e -> patViewer.optimumPosition());
+
+        JMenuItem byIndex = new JMenuItem("Show rectangle by index...");
+        byIndex.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.CTRL_MASK));
+        byIndex.addActionListener(e -> showRectangleByIndex());
+
         JMenuItem zoomIn = new JMenuItem("Zoom in");
         zoomIn.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_ADD, 0));
         zoomIn.addActionListener(e -> patViewer.incCenter());
@@ -171,6 +176,7 @@ public class Main {
 
         viewMenu.addSeparator();
 
+        viewMenu.add(byIndex);
         viewMenu.add(center);
         viewMenu.add(zoomIn);
         viewMenu.add(zoomOut);
@@ -199,6 +205,36 @@ public class Main {
         menuBar.add(viewMenu);
         menuBar.add(optimization);
         return menuBar;
+    }
+
+    private static void showRectangleByIndex() {
+        int selectedIndex = comboBox.getSelectedIndex();
+        PatFile file = patViewer.getFiles().get(selectedIndex);
+
+        String res = JOptionPane.showInputDialog(null, "Input rectangle index [1.." + (file.getList().size()) + "]\n(" + file.getName() + ')',
+                "Show rectangle by index", JOptionPane.PLAIN_MESSAGE);
+        if (res == null)
+            return;
+
+        res = res.trim();
+        if (res.isEmpty())
+            return;
+
+        int idx;
+        try {
+            idx = Integer.parseInt(res);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Input string is not a number: " + res, "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        if (idx < 1 || idx > file.getList().size()) {
+            JOptionPane.showMessageDialog(null, "Incorrect index, file " + file.getName() + " contains " + file.getList().size()
+                    + " lines, so number must be in [1.." + (file.getList().size()) + ']', "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        patViewer.zoomToRectangle(file.getList().get(idx - 1));
     }
 
     private static void showInvalid() {

@@ -611,4 +611,30 @@ public class PatViewer extends JComponent {
     }
 
 
+    public void zoomToRectangle(PatRectangle rect) {
+        Dimension size = getSize();
+
+        int h = Math.max(rect.getH(), rect.getW());
+        if (h == 0)
+            h = 1;
+
+        factor = size.height / 5f / h;
+
+        int rectX = rect.getX();
+        int rectY = rect.getY();
+
+        if (reverseX)
+            rectX = maxX - rect.getX();
+        if (reverseY)
+            rectY = maxY - rect.getY();
+
+        x = (int) (rectX * factor - size.width / 2);
+        y = (int) (rectY * factor - size.height / 2);
+        x = -x;
+        y = -y;
+
+        selectRectangle(rect);
+
+        repaint();
+    }
 }
