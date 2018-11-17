@@ -1,5 +1,7 @@
 package com.egs.patViewer;
 
+import javafx.util.Pair;
+
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import java.awt.*;
@@ -493,13 +495,21 @@ public class Main {
                 selectedLabel.setText("");
             }
             else {
+                Pair<PatFile, Integer> pair = patViewer.getRectangleIndex(rect);
+
                 String text = String.format("<html><body><pre>" +
                         "X: %6d<br>" +
                         "Y: %6d<br>" +
                         "W: %6d<br>" +
                         "H: %6d<br>" +
                         "A: %d<br>" +
-                        "</pre></body></html>", rect.getX(), rect.getY(), rect.getW(), rect.getH(), rect.getA());
+                        "<br>" +
+                        "File: %s<br>" +
+                        "Line number: %d<br>" +
+                        "</pre></body></html>", rect.getX(), rect.getY(), rect.getW(), rect.getH(), rect.getA(),
+                        pair == null ? "unknown" : Utils.extractFileName(pair.getKey().getName()),
+                        pair == null ? -1 : (int)pair.getValue()
+                        );
 
                 selectedLabel.setText(text);
             }

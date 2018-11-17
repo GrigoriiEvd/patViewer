@@ -1,5 +1,7 @@
 package com.egs.patViewer;
 
+import javafx.util.Pair;
+
 import javax.imageio.ImageIO;
 import javax.print.*;
 import javax.print.attribute.HashPrintRequestAttributeSet;
@@ -298,6 +300,19 @@ public class PatViewer extends JComponent {
 
             repaint();
         }
+    }
+
+    public Pair<PatFile, Integer> getRectangleIndex(PatRectangle rect) {
+        for (PatFile file : files) {
+            List<PatRectangle> list = file.getList();
+            for (int i = 0; i < list.size(); i++) {
+                PatRectangle r = list.get(i);
+                if (r == rect)
+                    return new Pair<>(file, i);
+            }
+        }
+
+        return null;
     }
 
     private Point toPatCoordinate(Point view) {
