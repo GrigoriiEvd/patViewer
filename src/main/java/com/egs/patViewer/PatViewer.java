@@ -315,7 +315,7 @@ public class PatViewer extends JComponent {
         return null;
     }
 
-    private Point toPatCoordinate(Point view) {
+    public Point toPatCoordinate(Point view) {
         int x = (int) ((view.x - PatViewer.this.x) / factor);
         int y = (int) ((view.y - PatViewer.this.y) / factor);
 

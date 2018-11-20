@@ -23,6 +23,8 @@ public class Main {
     private static JLabel statLabel = new JLabel("");
     private static JLabel selectedLabel = new JLabel("");
 
+    private static JLabel mousePositionLabel = new JLabel("mouse: ---");
+
     private static JProgressBar progress;
     private static boolean fpor = true;
 
@@ -519,6 +521,23 @@ public class Main {
         buttonPanel.add(selectedLabel);
         buttonPanel.add(Box.createVerticalStrut(20));
         buttonPanel.add(statLabel);
+        buttonPanel.add(Box.createVerticalStrut(20));
+        buttonPanel.add(mousePositionLabel);
+
+        patViewer.addMouseMotionListener(new MouseAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                Point point = patViewer.toPatCoordinate(e.getPoint());
+                mousePositionLabel.setText(String.format("mouse: %6d:%6d", point.x, point.y));
+                super.mouseMoved(e);
+            }
+        });
+        patViewer.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseExited(MouseEvent e) {
+                mousePositionLabel.setText("mouse: ---");
+            }
+        });
 
         refreshStat();
 
