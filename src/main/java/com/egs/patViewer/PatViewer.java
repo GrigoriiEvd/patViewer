@@ -17,6 +17,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -82,7 +83,7 @@ public class PatViewer extends JComponent {
     }
 
     public List<PatFile> getFiles() {
-        return files;
+        return Collections.unmodifiableList(files);
     }
 
     public Stream<PatRectangle> allRect() {
@@ -455,6 +456,12 @@ public class PatViewer extends JComponent {
     public void clearList() {
         this.files.clear();
         repaint();
+    }
+
+    public void removeFile(PatFile patFile) {
+        if (this.files.remove(patFile)) {
+            repaint();
+        }
     }
 
     public void incX() {

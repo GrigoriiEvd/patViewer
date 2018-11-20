@@ -88,6 +88,20 @@ public class Main {
             }
         });
 
+        JMenuItem closeFile = new JMenuItem("Close", KeyEvent.VK_C);
+        closeFile.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, InputEvent.CTRL_MASK));
+        closeFile.addActionListener(e -> {
+            if (patViewer.getLableFlag()) {
+                patViewer.lableFlag();
+            }
+            int selectedIndex = comboBox.getSelectedIndex();
+            if (selectedIndex < 0)
+                return;
+
+            comboBox.removeItemAt(selectedIndex);
+            patViewer.removeFile(patViewer.getFiles().get(selectedIndex));
+        });
+
         JMenuItem clear = new JMenuItem("Close All");
         clear.addActionListener(e -> {
             if (patViewer.getLableFlag()) {
@@ -109,6 +123,7 @@ public class Main {
         fileMenu.add(openFile);
         fileMenu.add(saveFile);
         fileMenu.add(print);
+        fileMenu.add(closeFile);
         fileMenu.add(clear);
 
         JMenuItem invertX = new JCheckBoxMenuItem("Инвертировать по оси X");
