@@ -517,7 +517,7 @@ public class PatViewer extends JComponent {
 
         List<PatRectangle> list;
 
-        if (file.getName().endsWith(".xls")) {
+        if (file.getName().endsWith(".xls") || file.getName().endsWith(".xlsx")) {
             list = ExelParser.parser(file);
         } else {
             list = PatParser.parser(file);

@@ -1,5 +1,7 @@
 package com.egs.patViewer;
 
+import org.apache.poi.ss.usermodel.CellType;
+
 /**
  * Created by EGS on 05.10.2015.
  */
@@ -10,7 +12,6 @@ public class FileMission {
     private int sizeModulX;
     private int sizeModulY;
     private int Proxod;
-    private int PFO;
     private int E;
     private int privWindowX;
     private int privWindowY;
@@ -37,10 +38,6 @@ public class FileMission {
 
     public void setProxod(int proxod) {
         Proxod = proxod;
-    }
-
-    public void setPFO(int PFO) {
-        this.PFO = PFO;
     }
 
     public void setE(int e) {
@@ -102,10 +99,6 @@ public class FileMission {
 
     public int getProxod() {
         return Proxod;
-    }
-
-    public int getPFO() {
-        return PFO;
     }
 
     public int getE() {

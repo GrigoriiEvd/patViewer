@@ -1,9 +1,8 @@
 package com.egs.patViewer;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,7 +22,14 @@ public class ExelParser {
         try (InputStream in = new FileInputStream(file)) {
             List<PatRectangle> list = new ArrayList<>();
 
-            HSSFWorkbook wb = new HSSFWorkbook(in);
+            Workbook wb;
+
+            if (file.getName().endsWith(".xlsx")) {
+                wb = new XSSFWorkbook(in);
+            }
+            else {
+                wb = new HSSFWorkbook(in);
+            }
 
             Sheet sheet = wb.getSheetAt(0);
 
@@ -37,10 +43,10 @@ public class ExelParser {
                 Row row = it.next();
                 Iterator<Cell> cells = row.iterator();
                 Cell cell = cells.next();
-                int cellType = cell.getCellType();
+                CellType cellType = cell.getCellType();
                 if (fl==0) {
                     switch (cellType){
-                        case Cell.CELL_TYPE_STRING:
+                        case STRING:
                             if ((cell.getStringCellValue().equals("Файл задания"))) {
                                 fl = 1;
                             }
@@ -56,7 +62,7 @@ public class ExelParser {
                     cells1.next();
                     cells1.next();
                     cell = cells1.next();
-                    if ((cell.getCellType() == Cell.CELL_TYPE_FORMULA)||(cell.getCellType() == Cell.CELL_TYPE_NUMERIC)){
+                    if ((cell.getCellType() == CellType.FORMULA)||(cell.getCellType() == CellType.NUMERIC)){
                         break;
                     }
                 }
@@ -75,7 +81,7 @@ public class ExelParser {
                     x.setName(cell.getStringCellValue());
                     cell = cells.next();
                     cell = cells.next();
-                    if (cell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+                    if (cell.getCellType() == CellType.NUMERIC) {
                         x.setnX((int) Float.parseFloat(cell.toString()));
                     }
                     cell = cells.next();
@@ -86,7 +92,7 @@ public class ExelParser {
                     }
                     cell = cells.next();
                     cell = cells.next();
-                    if (cell.getCellType() == cell.CELL_TYPE_FORMULA) {
+                    if (cell.getCellType() == CellType.FORMULA) {
                         try {
                             x.setProxod((int) cell.getNumericCellValue());
                         } catch (Exception e) {
@@ -96,11 +102,6 @@ public class ExelParser {
                         x.setProxod(1);
                     }
                     cell = cells.next();
-                    if (cell.getCellType() == cell.CELL_TYPE_FORMULA) {
-                        x.setPFO(cell.getCachedFormulaResultType());
-                    }else{
-                        x.setPFO((int) cell.getNumericCellValue());
-                    }
                     if (x.getProxod() > 1) {
                         x.setnX(fileMissions.get(fileMissions.size() - 1).getnX());
                         x.setnY(fileMissions.get(fileMissions.size() - 1).getnY());
@@ -127,7 +128,7 @@ public class ExelParser {
                     cell = cells.next();
                     cell = cells.next();
                     cell = cells.next();
-                    if (cell.getCellType() == cell.CELL_TYPE_NUMERIC) {
+                    if (cell.getCellType() == CellType.NUMERIC) {
                         x.setnY((int) Float.parseFloat(cell.toString()));
                     }
                     cell = cells.next();

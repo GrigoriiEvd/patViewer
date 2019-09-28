@@ -6,7 +6,7 @@ import java.util.stream.Stream;
 
 public class PatFileFilter extends FileFilter {
 
-    private static final String[] EXTENSIONS = {".pat", ".xls", ".opt", ".opg"};
+    private static final String[] EXTENSIONS = {".pat", ".xls", ".xlsx", ".opt", ".opg"};
 
     @Override
     public boolean accept(File f) {
@@ -15,6 +15,6 @@ public class PatFileFilter extends FileFilter {
 
     @Override
     public String getDescription() {
-        return "*.pat, *.xls, *.opt, *.opg";
+        return "*.pat, *.xls, *.xlsx, *.opt, *.opg";
     }
 }
