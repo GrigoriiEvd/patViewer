@@ -67,7 +67,7 @@
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
             <!-- версия 3.7 - стабильная,  3.8 в "beta 2" (на 18 мая 2011г).  -->
-            <version>4.1.0</version>
+            <version>5.4.0</version>
         </dependency>
     </dependencies>
 
